@@ -686,9 +686,14 @@ s_a[251] =
 s_a[252] =
     "Bulawayo|Harare|ManicalandMashonaland Central|Mashonaland East|Mashonaland West|Masvingo|Matabeleland North|Matabeleland South|Midlands";
 
+function resolveSelectElement(elementOrId) {
+    if (!elementOrId) return null;
+    return typeof elementOrId === "string" ? document.getElementById(elementOrId) : elementOrId;
+}
+
 function populateStates(countryElementId, stateElementId) {
-    var countryEl = document.getElementById(countryElementId);
-    var stateEl = document.getElementById(stateElementId);
+    var countryEl = resolveSelectElement(countryElementId);
+    var stateEl = resolveSelectElement(stateElementId);
 
     if (!countryEl || !stateEl) return;  // Prevents null access
     var selectedCountryIndex = countryEl.selectedIndex;
@@ -713,8 +718,8 @@ function populateStates(countryElementId, stateElementId) {
 
 
 function populateCountries(countryElementId, stateElementId) {
-    var countryEl = document.getElementById(countryElementId);
-    var stateEl = document.getElementById(stateElementId);
+    var countryEl = resolveSelectElement(countryElementId);
+    var stateEl = resolveSelectElement(stateElementId);
 
     if (!countryEl) return;
 
@@ -743,10 +748,74 @@ function populateCountries(countryElementId, stateElementId) {
     }
 }
 
+var italyProvincesByRegion = {
+    "sicilia": ["Agrigento (AG)", "Caltanissetta (CL)", "Catania (CT)", "Enna (EN)", "Messina (ME)", "Palermo (PA)", "Ragusa (RG)", "Siracusa (SR)", "Trapani (TP)"],
+    "piemonte": ["Alessandria (AL)", "Asti (AT)", "Biella (BI)", "Cuneo (CN)", "Novara (NO)", "Torino (TO)", "Verbania (VB)", "Vercelli (VC)"],
+    "marche": ["Ancona (AN)", "Ascoli-Piceno (AP)", "Fermo (FM)", "Macerata (MC)", "Pesaro-Urbino (PU)"], "valle daosta": ["Aosta (AO)"],
+    "abruzzo": ["L'Aquila (AQ)", "Chieti (CH)", "Pescara (PE)", "Teramo (TE)"],
+    "toscana": ["Arezzo (AR)", "Firenze (FI)", "Grosseto (GR)", "Livorno (LI)", "Lucca (LU)", "Massa-Carrara (MS)", "Pisa (PI)", "Pistoia (PT)", "Prato (PO)", "Siena (SI)"],
+    "campania": ["Avellino (AV)", "Benevento (BN)", "Caserta (CE)", "Napoli (NA)", "Salerno (SA)"],
+    "puglia": ["Bari (BA)", "Barletta-Andria-Trani (BT)", "Brindisi (BR)", "Foggia (FG)", "Lecce (LE)", "Taranto (TA)"],
+    "veneto": ["Belluno (BL)", "Padova (PD)", "Rovigo (RO)", "Treviso (TV)", "Venezia (VE)", "Verona (VR)", "Vicenza (VI)"],
+    "lombardia": ["Bergamo (BG)", "Brescia (BS)", "Como (CO)", "Cremona (CR)", "Lecco (LC)", "Lodi (LO)", "Mantova (MN)", "Milano (MI)", "Monza-Brianza (MB)", "Pavia (PV)", "Sondrio (SO)", "Varese (VA)"],
+    "emilia romagna": ["Bologna (BO)", "Ferrara (FE)", "Forli-Cesena (FC)", "Modena (MO)", "Parma (PR)", "Piacenza (PC)", "Ravenna (RA)", "Reggio-Emilia (RE)", "Rimini (RN)"],
+    "trentino alto adige": ["Bolzano (BZ)", "Trento (TN)"],
+    "sardegna": ["Cagliari (CA)", "Carbonia Iglesias (CI)", "Medio Campidano (VS)", "Nuoro (NU)", "Ogliastra (OG)", "Olbia Tempio (OT)", "Oristano (OR)", "Sassari (SS)"],
+    "molise": ["Campobasso (CB)", "Isernia (IS)"], "lazio": ["Frosinone (FR)", "Latina (LT)", "Rieti (RI)", "Roma (RM)", "Viterbo (VT)"],
+    "liguria": ["Genova (GE)", "Imperia (IM)", "La Spezia (SP)", "Savona (SV)"],
+    "friuli venezia giulia": ["Gorizia (GO)", "Pordenone (PN)", "Trieste (TS)", "Udine (UD)"],
+    "umbria": ["Perugia (PG)", "Terni (TR)"], "basilicata": ["Matera (MT)", "Potenza (PZ)"],
+    "calabria": ["Catanzaro (CZ)", "Cosenza (CS)", "Crotone (KR)", "Reggio Calabria (RC)", "Vibo Valentia (VV)"]
+};
+
+function provinceRegionKey(region) {
+    return (region || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function bindItalianProvinces(country, state, province) {
+    var countryEl = resolveSelectElement(country);
+    var stateEl = resolveSelectElement(state);
+    var provinceEl = resolveSelectElement(province);
+    if (!countryEl || !stateEl || !provinceEl) return;
+    function refresh() {
+        var selected = provinceEl.value || provinceEl.getAttribute("data-selected") || "";
+        var provinces = (countryEl.value || "").toLowerCase() === "italy" ? italyProvincesByRegion[provinceRegionKey(stateEl.value)] || [] : [];
+        provinceEl.length = 0;
+        provinceEl.options[0] = new Option("Select Provincia", "");
+        provinces.forEach(function (name) { provinceEl.options[provinceEl.length] = new Option(name, name, false, name === selected); });
+        if (!provinces.length && selected) provinceEl.options[provinceEl.length] = new Option(selected, selected, true, true);
+        provinceEl.setAttribute("data-selected", provinceEl.value || "");
+    }
+    if (provinceEl.dataset.provinceBound !== "1") {
+        countryEl.addEventListener("change", refresh);
+        stateEl.addEventListener("change", refresh);
+        provinceEl.dataset.provinceBound = "1";
+    }
+    refresh();
+}
+
 
 function initCountryStateDropdowns() {
     populateCountries("id_country", "id_state");
     populateCountries("country", "state");
+    populateCountries("id_domicilio_country", "id_domicilio_state");
+    populateCountries("id_residenza_country", "id_residenza_state");
+    document.querySelectorAll('select[name="domicilio_country"]').forEach(function (country) {
+        populateCountries(country, country.closest("form").querySelector('select[name="domicilio_state"]'));
+    });
+    document.querySelectorAll('select[name="residenza_country"]').forEach(function (country) {
+        populateCountries(country, country.closest("form").querySelector('select[name="residenza_state"]'));
+    });
+    bindItalianProvinces("id_domicilio_country", "id_domicilio_state", "id_docimicilio_provincia");
+    bindItalianProvinces("id_residenza_country", "id_residenza_state", "id_residenza_provincia");
+    document.querySelectorAll('select[name="domicilio_country"]').forEach(function (country) {
+        var form = country.closest("form");
+        bindItalianProvinces(country, form && form.querySelector('select[name="domicilio_state"]'), form && form.querySelector('select[name="docimicilio_provincia"]'));
+    });
+    document.querySelectorAll('select[name="residenza_country"]').forEach(function (country) {
+        var form = country.closest("form");
+        bindItalianProvinces(country, form && form.querySelector('select[name="residenza_state"]'), form && form.querySelector('select[name="residenza_provincia"]'));
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {

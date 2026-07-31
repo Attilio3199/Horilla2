@@ -11,8 +11,10 @@ from employee.models import (
     Actiontype,
     BonusPoint,
     DisciplinaryAction,
+    DutyRole,
     Employee,
     EmployeeBankDetails,
+    EmployeeDutyHistory,
     EmployeeNote,
     EmployeeTag,
     EmployeeWorkInformation,
@@ -31,13 +33,20 @@ admin.site.register([DisciplinaryAction, Actiontype])
 class EmployeeWorkInformationAdmin(SimpleHistoryAdmin):
     list_display = (
         "employee_id",
+        "work_area_type",
+        "department_code",
         "department_id",
+        "store_code",
+        "store_name",
         "job_position_id",
         "job_role_id",
         "reporting_manager_id",
         "shift_id",
         "work_type_id",
         "company_id",
+        "export_payslip",
+        "mirror_payslip",
+        "premi",
     )
     search_fields = (
         "employee_id__employee_first_name",
@@ -75,3 +84,5 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 admin.site.register(Employee, EmployeeAdmin)
 admin.site.register(EmployeeWorkInformation, EmployeeWorkInformationAdmin)
+admin.site.register(DutyRole)
+admin.site.register(EmployeeDutyHistory)

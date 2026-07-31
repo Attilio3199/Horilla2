@@ -115,6 +115,27 @@
 						<span
 							class="oh-profile__info-value">{{employee.emergency_contact_relation|default:_("None")}}</span>
 					</li>
+
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="finger-print-outline"></ion-icon><span>{% trans "Codice Fiscale" %}</span></span><span class="oh-profile__info-value">{{employee.codice_fiscale|default:_("None")}}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="cash-outline"></ion-icon><span>{% trans "Codice Paghe" %}</span></span><span class="oh-profile__info-value">{{employee.codice_paghe|default:_("None")}}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="shield-checkmark-outline"></ion-icon><span>{% trans "Categoria Protetta" %}</span></span><span class="oh-profile__info-value">{% if employee.categoria_protetta %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="location-outline"></ion-icon><span>{% trans "Place of Birth" %}</span></span><span class="oh-profile__info-value">{{employee.nascita_citta|default:_("None")}}{% if employee.nascita_provincia %} ({{employee.nascita_provincia}}){% endif %}</span></li>
+				</ul>
+
+				<h6 class="fw-bold mt-4 mb-2">{% trans "Domicilio" %}</h6>
+				<ul class="oh-profile__card-info-list">
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="home-outline"></ion-icon><span>{% trans "Address" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_address|default:_("None")}}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="business-outline"></ion-icon><span>{% trans "City" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_citta|default:_("None")}}{% if employee.docimicilio_provincia %} ({{employee.docimicilio_provincia}}){% endif %}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="flag-outline"></ion-icon><span>{% trans "Country" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_country|default:_("None")}}{% if employee.domicilio_state %}, {{employee.domicilio_state}}{% endif %}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="locate-outline"></ion-icon><span>{% trans "Zip Code" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_zip|default:_("None")}}</span></li>
+				</ul>
+
+				<h6 class="fw-bold mt-4 mb-2">{% trans "Residenza" %}</h6>
+				<ul class="oh-profile__card-info-list">
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="home-outline"></ion-icon><span>{% trans "Address" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_address|default:_("None")}}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="business-outline"></ion-icon><span>{% trans "City" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_citta|default:_("None")}}{% if employee.residenza_provincia %} ({{employee.residenza_provincia}}){% endif %}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="flag-outline"></ion-icon><span>{% trans "Country" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_country|default:_("None")}}{% if employee.residenza_state %}, {{employee.residenza_state}}{% endif %}</span></li>
+					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="locate-outline"></ion-icon><span>{% trans "Zip Code" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_zip|default:_("None")}}</span></li>
 				</ul>
 			</div>
 		</div>

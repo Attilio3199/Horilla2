@@ -23,7 +23,7 @@ from base.models import (
     JobRole,
     WorkType,
 )
-from employee.models import Employee, EmployeeWorkInformation
+from employee.models import Employee, EmployeeBankDetails, EmployeeWorkInformation
 from horilla_auth.models import HorillaUser
 
 logger = logging.getLogger(__name__)
@@ -481,20 +481,53 @@ def bulk_create_employee_import(success_lists):
         )
     }
 
-    employees_to_create = [
-        Employee(
-            employee_user_id=existing_users[row.get("Email")],
-            badge_id=row.get("Badge ID"),
-            employee_first_name=row.get("First Name"),
-            employee_last_name=row.get("Last Name"),
-            address=row.get("Address"),
-            email=row.get("Email"),
-            phone=row.get("Phone"),
-            gender=row.get("Gender").lower() if row.get("Gender") else None,
+    def value(row, *names):
+        for name in names:
+            field_value = row.get(name)
+            if isinstance(field_value, float) and pd.isna(field_value):
+                field_value = None
+            if field_value not in (None, ""):
+                return str(field_value).strip()
+        return None
+
+    employees_to_create = []
+    for row in success_lists:
+        email = row.get("Email")
+        if email not in existing_users:
+            continue
+        employees_to_create.append(
+            Employee(
+                employee_user_id=existing_users[email],
+                badge_id=value(row, "Badge ID"),
+                employee_first_name=value(row, "First Name"),
+                employee_last_name=value(row, "Last Name"),
+                address=value(row, "Address"),
+                email=email,
+                phone=value(row, "Phone"),
+                gender=(value(row, "Gender") or "").lower() or None,
+                dob=import_valid_date(
+                    value(row, "Date of Birth", "Data di Nascita"),
+                    "Date of Birth", {}, "dob"
+                ),
+                domicilio_address=value(row, "Domicilio Address", "Indirizzo Domicilio"),
+                domicilio_country=value(row, "Domicilio Country", "Paese Domicilio"),
+                domicilio_state=value(row, "Domicilio State", "Stato Domicilio"),
+                domicilio_zip=value(row, "Domicilio CAP", "Domicilio Zip"),
+                domicilio_citta=value(row, "Comune Domicilio", "Domicilio Città"),
+                docimicilio_provincia=value(row, "Provincia Domicilio"),
+                residenza_address=value(row, "Residenza Address", "Indirizzo Residenza"),
+                residenza_country=value(row, "Residenza Country", "Paese Residenza"),
+                residenza_state=value(row, "Residenza State", "Stato Residenza"),
+                residenza_zip=value(row, "Residenza CAP", "Residenza Zip"),
+                residenza_citta=value(row, "Comune Residenza", "Residenza Città"),
+                residenza_provincia=value(row, "Provincia Residenza"),
+                nascita_citta=value(row, "Comune di Nascita", "Nascita Città"),
+                nascita_provincia=value(row, "Provincia di Nascita"),
+                codice_fiscale=value(row, "Codice Fiscale"),
+                codice_paghe=value(row, "Codice Paghe", "Payroll Code"),
+                categoria_protetta=(value(row, "Categoria Protetta") or "").lower() in {"1", "true", "si", "sì", "yes", "x"},
+            )
         )
-        for row in success_lists
-        if row["Email"] in existing_users
-    ]
 
     created_employees = []
     if employees_to_create:
@@ -502,8 +535,95 @@ def bulk_create_employee_import(success_lists):
             created_employees = Employee.objects.bulk_create(
                 employees_to_create, batch_size=None if is_postgres else 999
             )
+            iban_by_email = {
+                row.get("Email"): value(row, "IBAN", "Account Number")
+                for row in success_lists
+            }
+            banks_to_create = [
+                EmployeeBankDetails(employee_id=employee, account_number=iban)
+                for employee in created_employees
+                if (iban := iban_by_email.get(employee.email))
+            ]
+            if banks_to_create:
+                EmployeeBankDetails.objects.bulk_create(
+                    banks_to_create, batch_size=None if is_postgres else 999
+                )
 
     return created_employees
+
+
+def bulk_update_personal_fields_import(rows):
+    """Update the full personnel register and IBAN for existing employees."""
+
+    def value(row, *names):
+        for name in names:
+            field_value = row.get(name)
+            if field_value is None or pd.isna(field_value):
+                continue
+            field_value = str(field_value).strip()
+            if field_value:
+                return field_value
+        return None
+
+    personal_fields = {
+        "domicilio_address": ("Domicilio Address", "Indirizzo Domicilio", "address", "Address"),
+        "domicilio_country": ("Domicilio Country", "Paese Domicilio"),
+        "domicilio_state": ("Domicilio State", "Stato Domicilio"),
+        "domicilio_zip": ("Domicilio CAP", "Domicilio Zip", "Domicilio ZIP"),
+        "domicilio_citta": ("Comune Domicilio", "Domicilio Città"),
+        "docimicilio_provincia": ("Provincia Domicilio",),
+        "residenza_address": ("Residenza Address", "Indirizzo Residenza"),
+        "residenza_country": ("Residenza Country", "Paese Residenza"),
+        "residenza_state": ("Residenza State", "Stato Residenza"),
+        "residenza_zip": ("Residenza CAP", "Residenza Zip", "Residenza ZIP"),
+        "residenza_citta": ("Comune Residenza", "Residenza Città"),
+        "residenza_provincia": ("Provincia Residenza",),
+        "nascita_citta": ("Comune di Nascita", "Nascita Città", "Luogo di Nascita"),
+        "nascita_provincia": ("Provincia di Nascita",),
+        "codice_fiscale": ("Codice Fiscale",),
+        "codice_paghe": ("Codice Paghe", "Payroll Code"),
+    }
+
+    for row in rows:
+        badge_id = value(row, "Badge ID")
+        email = value(row, "Email")
+        if not badge_id and not email:
+            continue
+        employee = Employee.objects.filter(
+            models.Q(badge_id=badge_id) | models.Q(email=email)
+        ).first()
+        if not employee:
+            continue
+
+        changed = []
+        for field_name, headers in personal_fields.items():
+            field_value = value(row, *headers)
+            if field_value is not None and getattr(employee, field_name) != field_value:
+                setattr(employee, field_name, field_value)
+                changed.append(field_name)
+
+        protected_category = value(row, "Categoria Protetta")
+        if protected_category is not None:
+            protected_category = protected_category.lower() in {
+                "1", "true", "si", "sì", "yes", "x"
+            }
+            if employee.categoria_protetta != protected_category:
+                employee.categoria_protetta = protected_category
+                changed.append("categoria_protetta")
+
+        dob = import_valid_date(value(row, "Date of Birth", "Data di Nascita"), "Date of Birth", {}, "dob")
+        if dob is not None and employee.dob != dob:
+            employee.dob = dob
+            changed.append("dob")
+        if changed:
+            employee.save(update_fields=changed)
+
+        iban = value(row, "IBAN", "Account Number")
+        if iban is not None:
+            bank, _ = EmployeeBankDetails.objects.get_or_create(employee_id=employee)
+            if bank.account_number != iban:
+                bank.account_number = iban
+                bank.save(update_fields=["account_number"])
 
 
 def set_initial_password(employees):

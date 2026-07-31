@@ -17,3 +17,12 @@ def add_days(value, days):
 @register.filter(name="edit_accessibility")
 def edit_accessibility(emp):
     return emp.default_accessibility.filter(feature="profile_edit").exists()
+
+
+@register.filter(name="italianfloat")
+def italianfloat(value):
+    """Format a decimal with Italian separators for employee views."""
+    try:
+        return f"{float(value):.2f}".replace(".", ",")
+    except (TypeError, ValueError):
+        return "0,00"

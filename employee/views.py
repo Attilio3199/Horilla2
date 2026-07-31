@@ -27,7 +27,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
+from django.db import models, transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.query import QuerySet
 from django.forms import DateInput, HiddenInput, Select
@@ -87,6 +87,7 @@ from employee.methods.methods import (
     bulk_create_department_import,
     bulk_create_employee_import,
     bulk_create_employee_types,
+    bulk_update_personal_fields_import,
     bulk_create_job_position_import,
     bulk_create_job_role_import,
     bulk_create_shifts,
@@ -1859,25 +1860,33 @@ def employee_create_update_personal_info(request, obj_id=None):
     """
     employee = Employee.objects.filter(id=obj_id).first()
     form = EmployeeForm(request.POST, request.FILES, instance=employee)
+    work_form = EmployeeWorkInformationForm(request.POST or None)
+    if obj_id is not None:
+        work_form = EmployeeWorkInformationForm(
+            request.POST or None,
+            instance=EmployeeWorkInformation.objects.filter(employee_id=employee).first(),
+        )
     if form.is_valid():
-        form.save()
         if obj_id is None:
+            if not work_form.is_valid():
+                return render(
+                    request,
+                    "employee/create_form/form_view.html",
+                    {"form": form, "work_form": work_form},
+                )
+            with transaction.atomic():
+                form.save()
+                work_instance = work_form.save(commit=False)
+                work_instance.employee_id = form.instance
+                work_instance.save()
+                if "tags" in work_form.cleaned_data:
+                    work_instance.tags.set(request.POST.getlist("tags"))
             messages.success(request, _("New Employee Added."))
             form = EmployeeForm(request.POST, instance=form.instance)
-            work_form = EmployeeWorkInformationForm(
-                instance=EmployeeWorkInformation.objects.filter(
-                    employee_id=form.instance
-                ).first()
-            )
-            bank_form = EmployeeBankDetailsForm(
-                instance=EmployeeBankDetails.objects.filter(
-                    employee_id=form.instance
-                ).first()
-            )
             return redirect(
-                f"/employee/employee-view-update/{form.instance.id}/",
-                data={"form": form, "work_form": work_form, "bank_form": bank_form},
+                f"/employee/employee-view-update/{form.instance.id}/"
             )
+        form.save()
         return HttpResponse(
             """
                 <div class="oh-alert-container">
@@ -1894,6 +1903,7 @@ def employee_create_update_personal_info(request, obj_id=None):
             "employee/create_form/form_view.html",
             {
                 "form": form,
+                "work_form": work_form,
             },
         )
     errors = "\n".join(
@@ -2750,6 +2760,20 @@ def work_info_import_file(request):
             "Email",
             "Phone",
             "Gender",
+            "Codice Fiscale",
+            "Codice Paghe",
+            "Categoria Protetta",
+            "Comune di Nascita",
+            "Provincia di Nascita",
+            "Indirizzo Residenza",
+            "Comune Residenza",
+            "Provincia Residenza",
+            "Residenza CAP",
+            "Indirizzo Domicilio",
+            "Comune Domicilio",
+            "Provincia Domicilio",
+            "Domicilio CAP",
+            "IBAN",
             "Department",
             "Job Position",
             "Job Role",
@@ -2821,6 +2845,7 @@ def work_info_import(request):
             if success_list:
                 try:
                     users = bulk_create_user_import(success_list)
+                    bulk_update_personal_fields_import(cleaned_data_frame.to_dict("records"))
                     employees = bulk_create_employee_import(success_list)
                     bulk_create_department_import(success_list)
                     bulk_create_job_position_import(success_list)

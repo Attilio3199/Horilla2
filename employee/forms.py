@@ -55,6 +55,28 @@ from horilla_widgets.widgets.horilla_multi_select_field import HorillaMultiSelec
 from horilla_widgets.widgets.select_widgets import HorillaMultiSelectWidget
 
 logger = logging.getLogger(__name__)
+MULTISPACE_RE = re.compile(r"\s{2,}")
+
+
+def normalize_whitespace(value):
+    """
+    Normalize user-entered whitespace by trimming ends and collapsing runs.
+    """
+    if not isinstance(value, str):
+        return value
+    return MULTISPACE_RE.sub(" ", value.strip())
+
+
+def normalize_text_value(field_name, value):
+    """
+    Normalize whitespace and uppercase text values except email fields.
+    """
+    value = normalize_whitespace(value)
+    if not isinstance(value, str):
+        return value
+    if "email" in (field_name or "").lower():
+        return value
+    return value.upper()
 
 
 class ModelForm(forms.ModelForm):
@@ -173,6 +195,12 @@ class ModelForm(forms.ModelForm):
                             company if company in queryset else queryset.first()
                         )
 
+    def clean(self):
+        cleaned_data = super().clean()
+        for field_name, value in list(cleaned_data.items()):
+            cleaned_data[field_name] = normalize_text_value(field_name, value)
+        return cleaned_data
+
 
 class UserForm(ModelForm):
     """
@@ -207,19 +235,28 @@ class EmployeeForm(ModelForm):
     Form for Employee model
     """
 
+    account_number = forms.CharField(
+        max_length=50,
+        required=False,
+        label=_("IBAN"),
+        widget=forms.TextInput(attrs={"class": "oh-input w-100"}),
+    )
+
     class Meta:
         """
         Meta class to add the additional info
         """
 
         model = Employee
-        fields = "__all__"
-        exclude = (
-            "employee_user_id",
-            "additional_info",
-            "is_from_onboarding",
-            "is_directly_converted",
-            "is_active",
+        fields = (
+            "badge_id", "employee_first_name", "employee_last_name",
+            "employee_profile", "email", "phone",
+            "domicilio_country", "domicilio_state", "domicilio_address",
+            "domicilio_zip", "domicilio_citta", "docimicilio_provincia",
+            "residenza_country", "residenza_state", "residenza_address",
+            "residenza_zip", "residenza_citta", "residenza_provincia",
+            "dob", "nascita_citta", "nascita_provincia", "gender",
+            "codice_fiscale", "categoria_protetta", "codice_paghe",
         )
         widgets = {
             "dob": TextInput(attrs={"type": "date", "id": "dob"}),
@@ -229,7 +266,15 @@ class EmployeeForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["email"].widget.attrs["autocomplete"] = "email"
         self.fields["phone"].widget.attrs["autocomplete"] = "phone"
-        self.fields["address"].widget.attrs["autocomplete"] = "address"
+        self.fields["domicilio_address"].widget.attrs["autocomplete"] = "address"
+        for field_name in (
+            "domicilio_country", "domicilio_state", "domicilio_address",
+            "domicilio_zip", "domicilio_citta", "docimicilio_provincia",
+            "residenza_country", "residenza_state", "residenza_address",
+            "residenza_zip", "residenza_citta", "residenza_provincia",
+            "nascita_citta", "nascita_provincia",
+        ):
+            self.fields[field_name].label = _(field_name)
         if instance := kwargs.get("instance"):
             # ----
             # django forms not showing value inside the date, time html element.
@@ -237,18 +282,39 @@ class EmployeeForm(ModelForm):
             # ----
             initial = {}
             if instance.dob is not None:
-                initial["dob"] = instance.dob.strftime("%H:%M")
-            kwargs["initial"] = initial
+                initial["dob"] = instance.dob.strftime("%Y-%m-%d")
+            if hasattr(instance, "employee_bank_details"):
+                try:
+                    initial["account_number"] = instance.employee_bank_details.account_number or ""
+                except EmployeeBankDetails.DoesNotExist:
+                    pass
+            self.initial.update(initial)
         else:
-            self.initial = {"badge_id": self.get_next_badge_id()}
+            self.initial = {
+                "badge_id": self.get_next_badge_id(),
+                "domicilio_country": "Italy",
+                "residenza_country": "Italy",
+            }
+
+    def save(self, commit=True):
+        instance = super().save(commit=commit)
+        if commit and instance.pk:
+            account_number = self.cleaned_data.get("account_number")
+            if account_number:
+                bank_details, _ = EmployeeBankDetails.objects.get_or_create(employee_id=instance)
+                bank_details.account_number = account_number
+                bank_details.save(update_fields=["account_number"])
+        return instance
 
     def as_p(self, *args, **kwargs):
         context = {"form": self}
         return render_to_string("employee/create_form/personal_info_as_p.html", context)
 
     def clean(self):
-        super().clean()
-        email = self.cleaned_data["email"]
+        cleaned_data = super().clean()
+        email = cleaned_data.get("email")
+        if not email:
+            return cleaned_data
         query = Employee.objects.entire().filter(email=email)
         if self.instance and self.instance.id:
             query = query.exclude(id=self.instance.id)
@@ -273,6 +339,7 @@ class EmployeeForm(ModelForm):
                 error_message = _("An Employee with this Email already exists")
 
             raise forms.ValidationError({"email": error_message})
+        return cleaned_data
 
     def get_next_badge_id(self):
         """
@@ -420,6 +487,19 @@ class EmployeeWorkInformationForm(ModelForm):
                             ("create", _("Create New {} ").format(translated_label))
                         ]
 
+        labels = {
+            "work_area_type": _("Dipartimento (SEDE/NEGOZI)"),
+            "department_code": _("Codice Reparto"),
+            "department_id": _("Reparto"),
+            "store_code": _("Codice Negozio"),
+            "store_name": _("Negozio"),
+        }
+        for field_name, label in labels.items():
+            if field_name in self.fields:
+                self.fields[field_name].label = label
+        if "work_area_type" in self.fields:
+            self.fields["work_area_type"].widget.attrs["onchange"] = "toggleWorkAreaFieldsGlobal()"
+
     def clean(self):
         cleaned_data = super().clean()
         if "employee_id" in self.errors:
@@ -566,11 +646,23 @@ excel_columns = [
     ("experience", _("Experience")),
     ("gender", _("Gender")),
     ("dob", _("Date of Birth")),
-    ("country", _("Country")),
-    ("state", _("State")),
-    ("city", _("City")),
-    ("address", _("Address")),
-    ("zip", _("Zip Code")),
+    ("codice_fiscale", _("Codice Fiscale")),
+    ("codice_paghe", _("Codice Paghe")),
+    ("categoria_protetta", _("Categoria Protetta")),
+    ("nascita_citta", _("Nascita Città")),
+    ("nascita_provincia", _("Nascita Provincia")),
+    ("residenza_country", _("Residenza Country")),
+    ("residenza_state", _("Residenza State")),
+    ("residenza_citta", _("Residenza Città")),
+    ("residenza_provincia", _("Residenza Provincia")),
+    ("residenza_address", _("Residenza Address")),
+    ("residenza_zip", _("Residenza ZIP")),
+    ("domicilio_country", _("Domicilio Country")),
+    ("domicilio_state", _("Domicilio State")),
+    ("domicilio_citta", _("Domicilio Città")),
+    ("docimicilio_provincia", _("Domicilio Provincia")),
+    ("domicilio_address", _("Domicilio Address")),
+    ("domicilio_zip", _("Domicilio ZIP")),
     ("marital_status", _("Marital Status")),
     ("children", _("Children")),
     ("is_active", _("Is active")),
@@ -592,6 +684,13 @@ excel_columns = [
     ("employee_work_info__salary_hour", _("Salary Hour")),
     ("employee_work_info__contract_end_date", _("Contract End Date")),
     ("employee_work_info__company_id", _("Company")),
+    ("employee_work_info__work_area_type", _("Work Area Type")),
+    ("employee_work_info__department_code", _("Department Code")),
+    ("employee_work_info__store_code", _("Store Code")),
+    ("employee_work_info__store_name", _("Store")),
+    ("employee_work_info__export_payslip", _("Esporta Cedolino")),
+    ("employee_work_info__mirror_payslip", _("Cedolino Speculare")),
+    ("employee_work_info__premi", _("Premi")),
     ("employee_bank_details__bank_name", _("Bank Name")),
     ("employee_bank_details__branch", _("Branch")),
     ("employee_bank_details__account_number", _("Account Number")),

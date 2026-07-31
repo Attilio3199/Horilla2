@@ -1,6 +1,14 @@
 {% load i18n %}
 <div class="oh-general__tab-target oh-profile-section mb-4 d-none" id="work" data-select2-id="select2-data-work">
     <div class="oh-profile-section__card" data-select2-id="select2-data-29-vht3">
+        <form action="" method="post">
+            {% csrf_token %}
+        <div class="row">
+            <div class="col-12 col-lg-6"><div class="oh-input-group"><label class="oh-label">{{ work_form.work_area_type.label }}</label>{{ work_form.work_area_type }}</div></div>
+            <div class="col-12 col-lg-6 work-area-sede-field"><div class="oh-input-group"><label class="oh-label">{{ work_form.department_code.label }}</label>{{ work_form.department_code }}</div></div>
+            <div class="col-12 col-lg-6 work-area-store-field"><div class="oh-input-group"><label class="oh-label">{{ work_form.store_code.label }}</label>{{ work_form.store_code }}</div></div>
+            <div class="col-12 col-lg-6 work-area-store-field"><div class="oh-input-group"><label class="oh-label">{{ work_form.store_name.label }}</label>{{ work_form.store_name }}</div></div>
+        </div>
         <div class="row" data-select2-id="select2-data-27-19z8">
             <div class="col-12 col-sm-12 col-md-12 col-lg-6" data-select2-id="select2-data-26-o2rs">
             <div class="oh-input-group" data-select2-id="select2-data-25-5380">
@@ -29,6 +37,12 @@
             </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12 col-lg-4"><div class="oh-input-group"><label class="oh-label">{{ work_form.export_payslip.label }}</label>{{ work_form.export_payslip }}</div></div>
+            <div class="col-12 col-lg-4"><div class="oh-input-group"><label class="oh-label">{{ work_form.mirror_payslip.label }}</label>{{ work_form.mirror_payslip }}</div></div>
+            <div class="col-12 col-lg-4"><div class="oh-input-group"><label class="oh-label">{{ work_form.premi.label }}</label>{{ work_form.premi }}</div></div>
+        </div>
+        <div class="w-100 d-flex justify-content-end mt-4"><button type="submit" class="oh-btn oh-btn--secondary">{% trans "Save" %}</button></div>
         <div class="row" data-select2-id="select2-data-27-95a0">
             <div class="col-12 col-sm-12 col-md-12 col-lg-6" data-select2-id="select2-data-26-u84a">
             <div class="oh-input-group" data-select2-id="select2-data-25-5l0x">
@@ -104,3 +118,12 @@
         </form>
     </div>
     </div>
+<script>
+function toggleWorkAreaFieldsGlobal() {
+  var field = document.getElementById('id_work_area_type');
+  var value = field ? field.value : '';
+  document.querySelectorAll('.work-area-sede-field').forEach(function (item) { item.style.display = value === 'SEDE' ? '' : 'none'; });
+  document.querySelectorAll('.work-area-store-field').forEach(function (item) { item.style.display = value === 'NEGOZI' ? '' : 'none'; });
+}
+document.addEventListener('DOMContentLoaded', toggleWorkAreaFieldsGlobal);
+</script>

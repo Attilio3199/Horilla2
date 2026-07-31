@@ -22,11 +22,32 @@
                         >{% trans "Personal Info" %}</a
                     >
                 </li>
+                <li class="oh-general__tab">
+                    <a
+                        href="#"
+                        class="oh-general__tab-link"
+                        data-action="general-tab"
+                        data-target="#work"
+                        >{% trans "Work Info" %}</a
+                    >
+                </li>
             </ul>
         </div>
     </section>
     <div id="personal-info">
         {% include 'employee/create_form/personal_info.html' %}
     </div>
+    <script>
+        $(document).ready(function () {
+            $("[data-action=general-tab]").on("click", function (e) {
+                e.preventDefault();
+                var targetId = $(this).attr("data-target");
+                $(".oh-general__tab-link").removeClass("oh-general__tab-link--active");
+                $(this).addClass("oh-general__tab-link--active");
+                $(".oh-general__tab-target").addClass("d-none");
+                $(targetId).removeClass("d-none");
+            });
+        });
+    </script>
     {% endblock content %}
 </div>

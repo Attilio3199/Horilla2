@@ -1,55 +1,730 @@
 {% load i18n %} {% load basefilters %}{% load widget_tweaks %}
 {{ form.non_field_errors }}
 
-<div class="row">
-    {% for field in form %}
-        {% if field.label != "Profile Image" and field.label != 'Country' and field.label != 'State' and field.label != 'Address' and field.label != 'Badge id' %}
-            <div class="col-lg-6">
-                <div class="oh-input__group">
-                    <label class="oh-label {% if field.field.required %}required-star{% endif %}" for="id_{{ field.name }}"
-                        title="{{ field.help_text }}">
-                        {% trans field.label %}
-                    </label>
+<style>
+    .employee-form-section {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+    }
 
-                    {% if field.field.widget.input_type == 'checkbox' %}
-                        <div class="oh-switch" style="width: 30px;">{{ field|add_class:'oh-switch__checkbox' }}</div>
-                    {% else %}
-                        {{ field|add_class:'form-control' }}
-                    {% endif %}
+    .employee-form-section .row {
+        row-gap: 1rem;
+    }
 
-                    {{ field.errors }}
-                </div>
+    .employee-form-section__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .employee-form-section__title {
+        margin: 0;
+    }
+
+    .employee-form-section .oh-input__group {
+        margin-bottom: 0;
+    }
+
+    .employee-form-section .oh-input,
+    .employee-form-section .form-control,
+    .employee-form-section .country-dropdown,
+    .employee-form-section .oh-select,
+    .employee-form-section .select2-container .select2-selection--single,
+    .employee-form-section select {
+        width: 100% !important;
+        min-height: 44px;
+    }
+
+    .employee-form-section textarea.oh-input,
+    .employee-form-section textarea.form-control {
+        min-height: 88px;
+    }
+
+    .employee-form-section .select2-container {
+        width: 100% !important;
+    }
+
+    .employee-form-section .select2-container .select2-selection--single {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        border: 1px solid #ced4da;
+    }
+
+    .employee-form-section .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 42px;
+        padding-left: 0.75rem;
+    }
+
+    .employee-form-section .select2-container .select2-selection--single .select2-selection__arrow {
+        height: 42px;
+    }
+
+    .employee-city-suggestions {
+        position: relative;
+    }
+
+    .employee-city-suggestions__list {
+        position: absolute;
+        top: calc(100% + 0.25rem);
+        left: 0;
+        right: 0;
+        z-index: 20;
+        display: none;
+        margin: 0;
+        padding: 0.25rem 0;
+        list-style: none;
+        background: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 0.5rem;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    .employee-city-suggestions__list.is-visible {
+        display: block;
+    }
+
+    .employee-city-suggestions__item {
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+    }
+
+    .employee-city-suggestions__item:hover {
+        background: #f1f5f9;
+    }
+</style>
+
+<div class="oh-card oh-card--border employee-form-section">
+    <div class="employee-form-section__header">
+        <h5 class="fw-bold employee-form-section__title">{% trans "Dati Anagrafici" %}</h5>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_badge_id">{% trans "Badge Id" %}</label>
+                {{ form.badge_id|add_class:'form-control' }}
+                {{ form.badge_id.errors }}
             </div>
-        {% elif field.label == 'Address' %}
-            <div class="col-lg-12">
-                <div class="oh-input__group">
-                    <label class="oh-label {% if field.field.required %}required-star{% endif %}" for="id_{{ field.name }}"
-                        title="{{ field.help_text }}">
-                        {% trans field.label %}
-                    </label>
-                    {{ field }}
-                    {{ field.errors }}
-                </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_account_number">{% trans "IBAN" %}</label>
+                {{ form.account_number|add_class:'form-control' }}
+                {{ form.account_number.errors }}
             </div>
-        {% elif field.label == 'Country' %}
-            <div class="row">
-                <div class="col-lg-6">
-                    <label class="oh-label" for="country">{% trans "Country" %}</label>
-                    <select name="country" class="w-100 oh-select-2" id="id_country"
-                        data-selected="{{ form.country.value|default:'' }}">
-                    </select>
-                    {{form.country.errors}}
-                    <span class="dropdown-wrapper" aria-hidden="true"></span>
-                    </span>
-                </div>
-                <div class="col-lg-6">
-                    <label class="oh-label d-block" for="state">{% trans "State" %}</label>
-                    <select name="state" class="w-100 oh-select-2" id="id_state"
-                        data-selected="{{ form.state.value|default:'' }}">
-                    </select>
-                    {{form.state.errors}}
-                </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_employee_first_name">{% trans "First Name" %}</label>
+                {{ form.employee_first_name|add_class:'form-control' }}
+                {{ form.employee_first_name.errors }}
             </div>
-        {% endif %}
-    {% endfor %}
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_employee_last_name">{% trans "Last Name" %}</label>
+                {{ form.employee_last_name|add_class:'form-control' }}
+                {{ form.employee_last_name.errors }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label required-star" for="id_email">{% trans "Email" %}</label>
+                {{ form.email|add_class:'form-control' }}
+                {{ form.email.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_phone">{% trans "Phone" %}</label>
+                {{ form.phone|add_class:'form-control' }}
+                {{ form.phone.errors }}
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="oh-card oh-card--border employee-form-section">
+    <div class="employee-form-section__header">
+        <h5 class="fw-bold employee-form-section__title">{% trans "Dati Personali" %}</h5>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_dob">{% trans "Date of Birth" %}</label>
+                {{ form.dob|add_class:'form-control' }}
+                {{ form.dob.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_gender">{% trans "Gender" %}</label>
+                {{ form.gender }}
+                {{ form.gender.errors }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_nascita_citta">{% trans "nascita_citta" %}</label>
+                <div class="employee-city-suggestions">
+                    {{ form.nascita_citta|add_class:'form-control'|attr:"autocomplete:off" }}
+                    <ul id="nascita-citta-suggestions" class="employee-city-suggestions__list"></ul>
+                </div>
+                {{ form.nascita_citta.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_nascita_provincia">{% trans "nascita_provincia" %}</label>
+                {{ form.nascita_provincia|add_class:'form-control' }}
+                {{ form.nascita_provincia.errors }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_codice_fiscale">{% trans "Codice Fiscale" %}</label>
+                {{ form.codice_fiscale|add_class:'form-control' }}
+                {{ form.codice_fiscale.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_codice_paghe">{% trans "Codice Paghe" %}</label>
+                {{ form.codice_paghe|add_class:'form-control' }}
+                {{ form.codice_paghe.errors }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <div class="form-check mt-4">
+                    {{ form.categoria_protetta|add_class:'form-check-input' }}
+                    <label class="form-check-label" for="id_categoria_protetta">{% trans "Categoria Protetta" %}</label>
+                </div>
+                {{ form.categoria_protetta.errors }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="oh-card oh-card--border employee-form-section">
+    <div class="employee-form-section__header">
+        <h5 class="fw-bold employee-form-section__title">{% trans "Residenza" %}</h5>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <label class="oh-label" for="id_residenza_country">{% trans "Nazione" %}</label>
+            <select name="residenza_country" class="w-100 country-dropdown" id="id_residenza_country"
+                data-selected="{{ form.residenza_country.value|default:'Italy' }}">
+            </select>
+            {{ form.residenza_country.errors }}
+        </div>
+        <div class="col-lg-6">
+            <label class="oh-label d-block" for="id_residenza_state">{% trans "Stato" %}</label>
+            <select name="residenza_state" class="w-100 country-dropdown" id="id_residenza_state"
+                data-selected="{{ form.residenza_state.value|default:'' }}">
+            </select>
+            {{ form.residenza_state.errors }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_residenza_address">{% trans "Indirizzo" %}</label>
+                {{ form.residenza_address }}
+                {{ form.residenza_address.errors }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_residenza_citta">{% trans "Città" %}</label>
+                <div class="employee-city-suggestions">
+                    {{ form.residenza_citta|add_class:'form-control'|attr:"autocomplete:off" }}
+                    <ul id="residenza-citta-suggestions" class="employee-city-suggestions__list"></ul>
+                </div>
+                {{ form.residenza_citta.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_residenza_provincia">{% trans "Provincia" %}</label>
+                <select name="residenza_provincia" id="id_residenza_provincia" class="w-100 country-dropdown"
+                    data-selected="{{ form.residenza_provincia.value|default:'' }}">
+                    {% if form.residenza_provincia.value %}
+                        <option value="{{ form.residenza_provincia.value }}" selected>{{ form.residenza_provincia.value }}</option>
+                    {% endif %}
+                </select>
+                {{ form.residenza_provincia.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_residenza_zip">{% trans "CAP" %}</label>
+                {{ form.residenza_zip|add_class:'form-control' }}
+                {{ form.residenza_zip.errors }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="oh-card oh-card--border employee-form-section">
+    <div class="employee-form-section__header">
+        <h5 class="fw-bold employee-form-section__title">{% trans "Domicilio" %}</h5>
+        <button type="button" class="oh-btn oh-btn--secondary" id="copy-residenza-to-domicilio">
+            {% trans "Residenza=Domicilio" %}
+        </button>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <label class="oh-label" for="id_domicilio_country">{% trans "Nazione" %}</label>
+            <select name="domicilio_country" class="w-100 country-dropdown" id="id_domicilio_country"
+                data-selected="{{ form.domicilio_country.value|default:'Italy' }}">
+            </select>
+            {{ form.domicilio_country.errors }}
+        </div>
+        <div class="col-lg-6">
+            <label class="oh-label d-block" for="id_domicilio_state">{% trans "Stato" %}</label>
+            <select name="domicilio_state" class="w-100 country-dropdown" id="id_domicilio_state"
+                data-selected="{{ form.domicilio_state.value|default:'' }}">
+            </select>
+            {{ form.domicilio_state.errors }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_domicilio_address">{% trans "Indirizzo" %}</label>
+                {{ form.domicilio_address }}
+                {{ form.domicilio_address.errors }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_domicilio_citta">{% trans "Città" %}</label>
+                <div class="employee-city-suggestions">
+                    {{ form.domicilio_citta|add_class:'form-control'|attr:"autocomplete:off" }}
+                    <ul id="domicilio-citta-suggestions" class="employee-city-suggestions__list"></ul>
+                </div>
+                {{ form.domicilio_citta.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_docimicilio_provincia">{% trans "Provincia" %}</label>
+                <select name="docimicilio_provincia" id="id_docimicilio_provincia" class="w-100 country-dropdown"
+                    data-selected="{{ form.docimicilio_provincia.value|default:'' }}">
+                    {% if form.docimicilio_provincia.value %}
+                        <option value="{{ form.docimicilio_provincia.value }}" selected>{{ form.docimicilio_provincia.value }}</option>
+                    {% endif %}
+                </select>
+                {{ form.docimicilio_provincia.errors }}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="oh-input__group">
+                <label class="oh-label" for="id_domicilio_zip">{% trans "CAP" %}</label>
+                {{ form.domicilio_zip|add_class:'form-control' }}
+                {{ form.domicilio_zip.errors }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var NORMALIZE_SPACES = function (value) {
+        if (typeof value !== "string") {
+            return value;
+        }
+        return value.replace(/\s+/g, " ").trim();
+    };
+
+    var ZIP_LOOKUP_DELAY = 450;
+    var CITY_LOOKUP_DELAY = 300;
+
+    function setFieldValue(targetId, value) {
+        var field = document.getElementById(targetId);
+        if (!field) return;
+        var normalizedValue = typeof value === "string" ? NORMALIZE_SPACES(value) : (value || "");
+        field.value = normalizedValue;
+        field.setAttribute("data-selected", value || "");
+        field.dispatchEvent(new Event("change", { bubbles: true }));
+        if (window.jQuery) {
+            window.jQuery(field).trigger("change");
+        }
+    }
+
+    function normalizeFieldValue(field) {
+        if (!field || typeof field.value !== "string") return;
+        var normalizedValue = NORMALIZE_SPACES(field.value);
+        if (shouldUppercaseField(field)) {
+            normalizedValue = normalizedValue.toUpperCase();
+        }
+        field.value = normalizedValue;
+    }
+
+    function shouldUppercaseField(field) {
+        if (!field) return false;
+        var fieldName = ((field.name || "") + " " + (field.id || "")).toLowerCase();
+        if (field.type === "email" || fieldName.indexOf("email") !== -1) {
+            return false;
+        }
+        return field.tagName === "INPUT" || field.tagName === "TEXTAREA";
+    }
+
+    function isItalianCountry(countryValue) {
+        var value = NORMALIZE_SPACES(countryValue || "").toLowerCase();
+        return value === "" || value === "italy" || value === "italia" || value === "it";
+    }
+
+    function extractPostcode(result) {
+        if (!result) return "";
+        if (result.address && result.address.postcode) {
+            return NORMALIZE_SPACES(result.address.postcode);
+        }
+        return "";
+    }
+
+    function buildLookupQuery(addressField, cityField) {
+        var address = addressField ? NORMALIZE_SPACES(addressField.value) : "";
+        var city = cityField ? NORMALIZE_SPACES(cityField.value) : "";
+        if (!address || !city) return "";
+        return address + ", " + city;
+    }
+
+    function getCountryFilterParams(countryValue) {
+        var normalized = NORMALIZE_SPACES(countryValue || "");
+        var lower = normalized.toLowerCase();
+        if (!normalized) {
+            return "";
+        }
+        if (lower === "italy" || lower === "italia" || lower === "it") {
+            return "&countrycodes=it";
+        }
+        return "&country=" + encodeURIComponent(normalized);
+    }
+
+    function scheduleZipLookup(config) {
+        if (!config) return;
+        window.clearTimeout(config.timerId);
+        config.timerId = window.setTimeout(function () {
+            lookupZipCode(config);
+        }, ZIP_LOOKUP_DELAY);
+    }
+
+    function lookupZipCode(config) {
+        var addressField = document.getElementById(config.addressId);
+        var cityField = document.getElementById(config.cityId);
+        var countryField = document.getElementById(config.countryId);
+        var zipField = document.getElementById(config.zipId);
+
+        if (!addressField || !cityField || !zipField) return;
+
+        if (!isItalianCountry(countryField ? countryField.value : "")) return;
+        if (zipField.dataset.manualZip === "true" && NORMALIZE_SPACES(zipField.value || "") !== "") return;
+
+        var query = buildLookupQuery(addressField, cityField);
+        if (!query) return;
+
+        var url = "https://nominatim.openstreetmap.org/search?q="
+            + encodeURIComponent(query)
+            + "&format=json&addressdetails=1&limit=1"
+            + getCountryFilterParams(countryField ? countryField.value : "");
+
+        fetch(url, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Zip lookup failed");
+                }
+                return response.json();
+            })
+            .then(function (results) {
+                if (!Array.isArray(results) || !results.length) return;
+                var postcode = extractPostcode(results[0]);
+                if (!postcode) return;
+                if (zipField.dataset.manualZip === "true" && NORMALIZE_SPACES(zipField.value || "") !== "") return;
+                zipField.value = postcode;
+                zipField.dataset.manualZip = "false";
+            })
+            .catch(function () {
+                return null;
+            });
+    }
+
+    function scheduleCityLookup(config) {
+        if (!config) return;
+        window.clearTimeout(config.timerId);
+        config.timerId = window.setTimeout(function () {
+            lookupCitySuggestions(config);
+        }, CITY_LOOKUP_DELAY);
+    }
+
+    function lookupCitySuggestions(config) {
+        var cityField = document.getElementById(config.cityId);
+        var countryField = document.getElementById(config.countryId);
+        var listEl = document.getElementById(config.listId);
+
+        if (!cityField || !listEl) return;
+
+        var term = NORMALIZE_SPACES(cityField.value || "");
+        if (term.length < 1) {
+            listEl.innerHTML = "";
+            listEl.classList.remove("is-visible");
+            return;
+        }
+
+        var url = "https://nominatim.openstreetmap.org/search?q="
+            + encodeURIComponent(term)
+            + "&format=json&addressdetails=1&limit=6"
+            + "&dedupe=1"
+            + getCountryFilterParams(countryField ? countryField.value : "");
+
+        fetch(url, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("City lookup failed");
+                }
+                return response.json();
+            })
+            .then(function (results) {
+                if (!Array.isArray(results)) return;
+                var seen = {};
+                var options = [];
+
+                results.forEach(function (item) {
+                    var type = NORMALIZE_SPACES((item && item.type) || "").toLowerCase();
+                    if (
+                        ["city", "administrative", "town", "village", "hamlet", "municipality", "suburb"].indexOf(type) === -1
+                    ) {
+                        return;
+                    }
+                    var cityName = item && item.address
+                        ? (item.address.city || item.address.town || item.address.village || item.address.municipality || "")
+                        : "";
+                    if (!cityName && item && item.display_name) {
+                        cityName = item.display_name.split(",")[0] || "";
+                    }
+                    cityName = NORMALIZE_SPACES(cityName);
+                    if (!cityName || seen[cityName.toLowerCase()]) return;
+                    seen[cityName.toLowerCase()] = true;
+                    options.push('<li class="employee-city-suggestions__item" data-city-value="' + cityName.replace(/"/g, "&quot;") + '">' + cityName + '</li>');
+                });
+
+                listEl.innerHTML = options.join("");
+                listEl.classList.toggle("is-visible", options.length > 0);
+            })
+            .catch(function () {
+                listEl.innerHTML = "";
+                listEl.classList.remove("is-visible");
+            });
+    }
+
+    function initializeZipAutofill(config) {
+        var addressField = document.getElementById(config.addressId);
+        var cityField = document.getElementById(config.cityId);
+        var countryField = document.getElementById(config.countryId);
+        var zipField = document.getElementById(config.zipId);
+
+        if (!addressField || !cityField || !zipField) return;
+
+        [addressField, cityField].forEach(function (field) {
+            field.addEventListener("input", function () {
+                scheduleZipLookup(config);
+            });
+            field.addEventListener("blur", function () {
+                normalizeFieldValue(field);
+                scheduleZipLookup(config);
+            });
+            field.addEventListener("change", function () {
+                normalizeFieldValue(field);
+                scheduleZipLookup(config);
+            });
+        });
+
+        if (countryField) {
+            countryField.addEventListener("change", function () {
+                scheduleZipLookup(config);
+            });
+        }
+
+        zipField.dataset.manualZip = NORMALIZE_SPACES(zipField.value || "") ? "true" : "false";
+        zipField.addEventListener("input", function () {
+            zipField.dataset.manualZip = NORMALIZE_SPACES(zipField.value || "") ? "true" : "false";
+        });
+        zipField.addEventListener("blur", function () {
+            normalizeFieldValue(zipField);
+            zipField.dataset.manualZip = NORMALIZE_SPACES(zipField.value || "") ? "true" : "false";
+        });
+    }
+
+    function initializeCityAutofill(config) {
+        var cityField = document.getElementById(config.cityId);
+        var countryField = document.getElementById(config.countryId);
+        if (!cityField) return;
+
+        cityField.addEventListener("input", function () {
+            scheduleCityLookup(config);
+        });
+        cityField.addEventListener("focus", function () {
+            scheduleCityLookup(config);
+        });
+        cityField.addEventListener("change", function () {
+            normalizeFieldValue(cityField);
+            scheduleCityLookup(config);
+        });
+        cityField.addEventListener("blur", function () {
+            normalizeFieldValue(cityField);
+            window.setTimeout(function () {
+                var listEl = document.getElementById(config.listId);
+                if (listEl) {
+                    listEl.classList.remove("is-visible");
+                }
+            }, 200);
+        });
+
+        if (countryField) {
+            countryField.addEventListener("change", function () {
+                scheduleCityLookup(config);
+            });
+        }
+    }
+
+    function normalizeFormFields() {
+        var fields = document.querySelectorAll(
+            "input:not([type='file']):not([type='checkbox']):not([type='radio']), textarea"
+        );
+        fields.forEach(function (field) {
+            normalizeFieldValue(field);
+        });
+    }
+
+    function copyResidenzaToDomicilio() {
+        var residenzaCountry = document.getElementById("id_residenza_country");
+        var residenzaState = document.getElementById("id_residenza_state");
+        var residenzaProvincia = document.getElementById("id_residenza_provincia");
+        var residenzaAddress = document.getElementById("id_residenza_address");
+        var residenzaZip = document.getElementById("id_residenza_zip");
+        var residenzaCitta = document.getElementById("id_residenza_citta");
+
+        setFieldValue("id_domicilio_country", residenzaCountry ? residenzaCountry.value : "");
+        setTimeout(function () {
+            setFieldValue("id_domicilio_state", residenzaState ? residenzaState.value : "");
+            setFieldValue("id_docimicilio_provincia", residenzaProvincia ? residenzaProvincia.value : "");
+        }, 150);
+        setFieldValue("id_domicilio_address", residenzaAddress ? residenzaAddress.value : "");
+        setFieldValue("id_domicilio_zip", residenzaZip ? residenzaZip.value : "");
+        setFieldValue("id_domicilio_citta", residenzaCitta ? residenzaCitta.value : "");
+        var domicilioZip = document.getElementById("id_domicilio_zip");
+        if (domicilioZip) {
+            domicilioZip.dataset.manualZip = NORMALIZE_SPACES(domicilioZip.value || "") ? "true" : "false";
+        }
+    }
+
+    document.addEventListener("click", function (event) {
+        if (event.target && event.target.id === "copy-residenza-to-domicilio") {
+            copyResidenzaToDomicilio();
+        }
+    });
+
+    document.addEventListener("blur", function (event) {
+        if (event.target && (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA")) {
+            normalizeFieldValue(event.target);
+        }
+    }, true);
+
+    document.addEventListener("submit", function (event) {
+        if (event.target && event.target.tagName === "FORM") {
+            normalizeFormFields();
+        }
+    });
+
+    document.addEventListener("click", function (event) {
+        var suggestion = event.target.closest(".employee-city-suggestions__item");
+        if (suggestion) {
+            var cityValue = suggestion.getAttribute("data-city-value") || "";
+            var listEl = suggestion.closest(".employee-city-suggestions__list");
+            if (!listEl) return;
+            var wrapper = listEl.closest(".employee-city-suggestions");
+            var input = wrapper ? wrapper.querySelector("input") : null;
+            if (input) {
+                input.value = cityValue;
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+                input.dispatchEvent(new Event("blur", { bubbles: true }));
+            }
+            listEl.classList.remove("is-visible");
+            return;
+        }
+
+        document.querySelectorAll(".employee-city-suggestions__list").forEach(function (listEl) {
+            if (!listEl.contains(event.target)) {
+                listEl.classList.remove("is-visible");
+            }
+        });
+    });
+
+    initializeZipAutofill({
+        addressId: "id_residenza_address",
+        cityId: "id_residenza_citta",
+        countryId: "id_residenza_country",
+        zipId: "id_residenza_zip",
+        timerId: null
+    });
+
+    initializeZipAutofill({
+        addressId: "id_domicilio_address",
+        cityId: "id_domicilio_citta",
+        countryId: "id_domicilio_country",
+        zipId: "id_domicilio_zip",
+        timerId: null
+    });
+
+    initializeCityAutofill({
+        cityId: "id_nascita_citta",
+        countryId: "id_residenza_country",
+        listId: "nascita-citta-suggestions",
+        timerId: null
+    });
+
+    initializeCityAutofill({
+        cityId: "id_residenza_citta",
+        countryId: "id_residenza_country",
+        listId: "residenza-citta-suggestions",
+        timerId: null
+    });
+
+    initializeCityAutofill({
+        cityId: "id_domicilio_citta",
+        countryId: "id_domicilio_country",
+        listId: "domicilio-citta-suggestions",
+        timerId: null
+    });
+})();
+</script>

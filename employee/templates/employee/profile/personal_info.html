@@ -54,58 +54,54 @@
                 </div>
                 <div class="row">
                     <div class="col-12 col-sm-12 col-md-12 col-lg-6">
-                        <label class="oh-label d-block" for="{{form.qualification.id_for_label}}">
-                            {% trans "Qualification" %}
-                        </label>
-                        {{ form.qualification }} {{ form.qualification.errors }}
+                        <label class="oh-label" for="{{ form.codice_fiscale.id_for_label }}">{% trans "Codice Fiscale" %}</label>
+                        {{ form.codice_fiscale }} {{ form.codice_fiscale.errors }}
                     </div>
                     <div class="col-12 col-sm-12 col-md-12 col-lg-6">
-                        <label class="oh-label d-block" for="{{form.experience.id_for_label}}">
-                            {% trans "Experience" %}
-                        </label>
-                        {{ form.experience }} {{ form.experience.errors }}
+                        <label class="oh-label" for="{{ form.codice_paghe.id_for_label }}">{% trans "Codice Paghe" %}</label>
+                        {{ form.codice_paghe }} {{ form.codice_paghe.errors }}
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-                        <label class="oh-label" for="address">{% trans "Address" %}</label>
-                        {{ form.address }} {{ form.address.errors }}
+                        <label class="oh-label"><input type="checkbox" name="categoria_protetta" {% if form.categoria_protetta.value %}checked{% endif %}> {% trans "Categoria Protetta" %}</label>
+                        {{ form.categoria_protetta.errors }}
+                    </div>
+                </div>
+                <h6 class="mt-4">{% trans "Residenza" %}</h6>
+                <div class="row">
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-6">
+                        <label class="oh-label">{% trans "Country" %}</label>
+                        {{ form.residenza_country }} {{ form.residenza_country.errors }}
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-6">
+                        <label class="oh-label">{% trans "State" %}</label>
+                        {{ form.residenza_state }} {{ form.residenza_state.errors }}
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-6">
-                        <label class="oh-label" for="{{ form.country.id_for_label }}">{% trans "Country" %}</label>
-                        <select
-                            class="oh-select-2 oh-select w-100"
-                            name="country"
-                            id="{{ form.country.id_for_label }}"
-                            data-selected="{{ form.country.value|default:'' }}"
-                        >
-                        </select>
-                        {{ form.country.errors }}
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+                        <label class="oh-label">{% trans "Address" %}</label>
+                        {{ form.residenza_address }} {{ form.residenza_address.errors }}
                     </div>
                     <div class="col-12 col-sm-12 col-md-12 col-lg-6">
-                        <label class="oh-label d-block" for="{{ form.state.id_for_label }}">{% trans "State" %}</label>
-                        <select
-                            name="state"
-                            class="oh-select oh-select-2"
-                            id="{{ form.state.id_for_label }}"
-                            data-selected="{{ form.state.value|default:'' }}"
-                        >
-                        </select>
-                        {{ form.country.errors }}
+                        <label class="oh-label">{% trans "City" %}</label>
+                        {{ form.residenza_citta }} {{ form.residenza_citta.errors }}
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-3">
+                        <label class="oh-label">{% trans "Provincia" %}</label>
+                        {{ form.residenza_provincia }} {{ form.residenza_provincia.errors }}
+                    </div>
+                    <div class="col-12 col-sm-12 col-md-12 col-lg-3">
+                        <label class="oh-label">{% trans "Zip Code" %}</label>
+                        {{ form.residenza_zip }} {{ form.residenza_zip.errors }}
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-6">
-                        <label class="oh-label d-block" for="state">{% trans "City" %}</label>
-                        {{ form.city }} {{ form.city.errors }}
-                    </div>
-                    <div class="col-12 col-sm-12 col-md-12 col-lg-6">
-                        <label class="oh-label d-block" for="state">{% trans "Zip Code" %}</label>
-                        {{ form.zip }} {{ form.zip.errors }}
-                    </div>
-                </div>
+                <h6 class="mt-4">{% trans "Domicilio" %}</h6>
+                <div class="row"><div class="col-lg-6"><label class="oh-label">{% trans "Country" %}</label>{{ form.domicilio_country }}</div><div class="col-lg-6"><label class="oh-label">{% trans "State" %}</label>{{ form.domicilio_state }}</div></div>
+                <div class="row"><div class="col-lg-12"><label class="oh-label">{% trans "Address" %}</label>{{ form.domicilio_address }}</div><div class="col-lg-6"><label class="oh-label">{% trans "City" %}</label>{{ form.domicilio_citta }}</div><div class="col-lg-3"><label class="oh-label">{% trans "Provincia" %}</label>{{ form.docimicilio_provincia }}</div><div class="col-lg-3"><label class="oh-label">{% trans "Zip Code" %}</label>{{ form.domicilio_zip }}</div></div>
+                <h6 class="mt-4">{% trans "Luogo di nascita" %}</h6>
+                <div class="row"><div class="col-lg-6"><label class="oh-label">{% trans "City" %}</label>{{ form.nascita_citta }}</div><div class="col-lg-6"><label class="oh-label">{% trans "Provincia" %}</label>{{ form.nascita_provincia }}</div></div>
                 <div class="row">
                     <div class="col-12 col-sm-12 col-md-12 col-lg-6">
                         <label class="oh-label d-block" for="state">{% trans "Emergency Contact" %}</label>
