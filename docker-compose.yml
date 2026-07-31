@@ -1,81 +1,70 @@
-# Development Compose stack for Horilla HR.
-# Zero-config: `make dev` / `docker compose up --build`
-# Production: `make prod` (uses docker-compose.prod.yml + .env — see .env.dist)
-#
-# Dev secrets below are intentionally weak and for local use only.
-# Replaces the legacy docker-compose.yaml (Python 3.10 / runserver) stack.
-
 services:
-  web:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
-      - staticfiles:/app/staticfiles
-      - media:/app/media
-    environment:
-      - DEBUG=1
-      - DB_HOST=db
-      - SECRET_KEY=dev-secret-key-change-in-production
-      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
-      - CSRF_TRUSTED_ORIGINS=http://localhost:8000
-      - DATABASE_URL=postgres://horilla_user:horilla_pass@db:5432/horilla_db
-      - DB_INIT_PASSWORD=dev-init-password-change-in-production
-      - REDIS_URL=redis://:horilla_pass@redis:6379/0
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
-      interval: 30s
-      timeout: 30s
-      start_period: 60s
-      retries: 3
-
   db:
-    image: postgres:16-alpine
+    image: postgres:17
+    restart: unless-stopped
+    # ⬇️ AGGIUNTO: Espone la porta a tutta la rete locale (0.0.0.0)
+    ports:
+      - "0.0.0.0:5432:5432"
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: horilla_db
-      POSTGRES_USER: horilla_user
-      POSTGRES_PASSWORD: horilla_pass
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U horilla_user -d horilla_db"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes --requirepass horilla_pass
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "horilla_pass", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      # Static only — /media/ is proxied to Django (protected_media). Do not
-      # mount the media volume here; an alias location would bypass auth.
-      - staticfiles:/static:ro
-      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+  db-init:
+    image: postgres:17
+    restart: "no"
     depends_on:
-      web:
+      db:
         condition: service_healthy
-    profiles: ["production"]
+    env_file:
+      - .env
+    environment:
+      PGHOST: db
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ${DB_DUMP_PATH:-./horilla_main.dump}:/horilla_main.dump:ro
+    command: >
+      bash -c "
+        if [ ! -f /horilla_main.dump ]; then
+          echo 'No dump file found, skipping restore (fresh database).';
+        elif psql -U \"$$DB_USER\" -d \"$$DB_NAME\" -c 'SELECT 1 FROM django_migrations LIMIT 1' > /dev/null 2>&1; then
+          echo 'Database already initialized, skipping restore.';
+        else
+          echo 'Restoring database from dump...';
+          pg_restore --no-privileges --no-owner -U \"$$DB_USER\" -d \"$$DB_NAME\" /horilla_main.dump || { echo 'pg_restore failed!'; exit 1; };
+          echo 'Database restore complete.';
+        fi
+      "
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${DOCKER_PORT:-8001}:${DOCKER_PORT:-8001}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      MEDIA_ROOT: /app/media/
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    command: sh ./entrypoint.sh
+    volumes:
+      - ./horilla:/app/horilla
+      - /app/horilla/locale
+      - ./media:/app/media
 
 volumes:
-  staticfiles:
-  media:
   postgres_data:
-  redis_data:
