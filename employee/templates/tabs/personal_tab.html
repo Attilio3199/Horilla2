@@ -4,7 +4,163 @@
 		<div class="oh-card oh-card--margin">
 			<div class="oh-card__header">
 				<span class="oh-card__title oh-card__title--sm fw-bold me-2">
-					{% trans "Personal Information" %}
+					{% trans "Dati Anagrafici" %}
+				</span>
+			</div>
+			<div class="oh-card__body mt-4">
+				<ul class="oh-profile__card-info-list">
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="id-card-outline"></ion-icon>
+							<span>{% trans "Badge ID" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.badge_id|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="person-outline"></ion-icon>
+							<span>{% trans "First Name" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.employee_first_name|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="person-outline"></ion-icon>
+							<span>{% trans "Last Name" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.employee_last_name|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="mail-outline"></ion-icon>
+							<span>{% trans "Email" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.email|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="call-outline"></ion-icon>
+							<span>{% trans "Phone" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.phone|default:_("None")}}</span>
+					</li>
+				</ul>
+
+				<!-- Domicilio -->
+				<h6 class="fw-bold mt-4 mb-2">{% trans "Domicilio" %}</h6>
+				<ul class="oh-profile__card-info-list">
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="flag-outline"></ion-icon>
+							<span>{% trans "Country" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.domicilio_country|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="compass-outline"></ion-icon>
+							<span>{% trans "State" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.domicilio_state|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="home-outline"></ion-icon>
+							<span>{% trans "Address" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.domicilio_address|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="locate-outline"></ion-icon>
+							<span>{% trans "Zip Code" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.domicilio_zip|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="business-outline"></ion-icon>
+							<span>{% trans "Comune" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.domicilio_citta|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="map-outline"></ion-icon>
+							<span>{% trans "Provincia" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.docimicilio_provincia|default:_("None")}}</span>
+					</li>
+				</ul>
+
+				<!-- Residenza -->
+				<h6 class="fw-bold mt-4 mb-2">{% trans "Residenza" %}</h6>
+				<ul class="oh-profile__card-info-list">
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="flag-outline"></ion-icon>
+							<span>{% trans "Country" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.residenza_country|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="compass-outline"></ion-icon>
+							<span>{% trans "State" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.residenza_state|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="home-outline"></ion-icon>
+							<span>{% trans "Address" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.residenza_address|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="locate-outline"></ion-icon>
+							<span>{% trans "Zip Code" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.residenza_zip|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="business-outline"></ion-icon>
+							<span>{% trans "Comune" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.residenza_citta|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="map-outline"></ion-icon>
+							<span>{% trans "Provincia" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.residenza_provincia|default:_("None")}}</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- Dati Personali card -->
+		<div class="oh-card oh-card--margin">
+			<div class="oh-card__header">
+				<span class="oh-card__title oh-card__title--sm fw-bold me-2">
+					{% trans "Dati Personali" %}
 				</span>
 			</div>
 			<div class="oh-card__body mt-4">
@@ -14,8 +170,23 @@
 							<ion-icon name="calendar-outline"></ion-icon>
 							<span>{% trans "Date of Birth" %}</span>
 						</span>
-						<span
-							class="oh-profile__info-value dateformat_changer">{{employee.get_employee_dob|default:_("None")}}</span>
+						<span class="oh-profile__info-value dateformat_changer">{{employee.get_employee_dob|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="location-outline"></ion-icon>
+							<span>{% trans "Luogo di Nascita" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.nascita_citta|default:_("None")}}</span>
+					</li>
+
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="map-outline"></ion-icon>
+							<span>{% trans "Provincia di Nascita" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.nascita_provincia|default:_("None")}}</span>
 					</li>
 
 					<li class="oh-profile__card-info-item">
@@ -23,304 +194,318 @@
 							<ion-icon name="transgender-outline"></ion-icon>
 							<span>{% trans "Gender" %}</span>
 						</span>
-						<span class="oh-profile__info-value">{{employee.get_gender_display}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="home-outline"></ion-icon>
-							<span>{% trans "Address" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.address|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="flag-outline"></ion-icon>
-							<span>{% trans "Country" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.country|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="compass-outline"></ion-icon>
-							<span>{% trans "State" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.state|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="planet-outline"></ion-icon>
-							<span>{% trans "City" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.city|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="book-outline"></ion-icon>
-							<span>{% trans "Qualification" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.qualification|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="briefcase-outline"></ion-icon>
-							<span>{% trans "Experience" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.experience|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="link-outline"></ion-icon>
-							<span>{% trans "Marital Status" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.get_marital_status_display}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="person-circle-outline"></ion-icon>
-							<span>{% trans "Children" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.children|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="call-outline"></ion-icon>
-							<span>{% trans "Emergency Contact" %}</span>
-						</span>
-						<span class="oh-profile__info-value">{{employee.emergency_contact|default:_("None")}}</span>
-					</li>
-
-					<li class="oh-profile__card-info-item">
-						<span class="oh-profile__info-label mb-1">
-							<ion-icon name="people-circle-outline"></ion-icon>
-							<span>{% trans "Emergency Contact Name" %}</span>
-						</span>
-						<span
-							class="oh-profile__info-value">{{employee.emergency_contact_name|default:_("None")}}</span>
+						<span class="oh-profile__info-value">{% trans employee.get_gender_display %}</span>
 					</li>
 
 					<li class="oh-profile__card-info-item">
 						<span class="oh-profile__info-label mb-1">
 							<ion-icon name="finger-print-outline"></ion-icon>
-							<span>{% trans "Emergency Contact Relation" %}</span>
+							<span>{% trans "Codice Fiscale" %}</span>
 						</span>
-						<span
-							class="oh-profile__info-value">{{employee.emergency_contact_relation|default:_("None")}}</span>
+						<span class="oh-profile__info-value">{{employee.codice_fiscale|default:_("None")}}</span>
 					</li>
 
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="finger-print-outline"></ion-icon><span>{% trans "Codice Fiscale" %}</span></span><span class="oh-profile__info-value">{{employee.codice_fiscale|default:_("None")}}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="cash-outline"></ion-icon><span>{% trans "Codice Paghe" %}</span></span><span class="oh-profile__info-value">{{employee.codice_paghe|default:_("None")}}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="shield-checkmark-outline"></ion-icon><span>{% trans "Categoria Protetta" %}</span></span><span class="oh-profile__info-value">{% if employee.categoria_protetta %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="location-outline"></ion-icon><span>{% trans "Place of Birth" %}</span></span><span class="oh-profile__info-value">{{employee.nascita_citta|default:_("None")}}{% if employee.nascita_provincia %} ({{employee.nascita_provincia}}){% endif %}</span></li>
-				</ul>
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="shield-checkmark-outline"></ion-icon>
+							<span>{% trans "Categoria Protetta" %}</span>
+						</span>
+						<span class="oh-profile__info-value">
+							{% if employee.categoria_protetta %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}
+						</span>
+					</li>
 
-				<h6 class="fw-bold mt-4 mb-2">{% trans "Domicilio" %}</h6>
-				<ul class="oh-profile__card-info-list">
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="home-outline"></ion-icon><span>{% trans "Address" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_address|default:_("None")}}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="business-outline"></ion-icon><span>{% trans "City" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_citta|default:_("None")}}{% if employee.docimicilio_provincia %} ({{employee.docimicilio_provincia}}){% endif %}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="flag-outline"></ion-icon><span>{% trans "Country" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_country|default:_("None")}}{% if employee.domicilio_state %}, {{employee.domicilio_state}}{% endif %}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="locate-outline"></ion-icon><span>{% trans "Zip Code" %}</span></span><span class="oh-profile__info-value">{{employee.domicilio_zip|default:_("None")}}</span></li>
-				</ul>
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="cash-outline"></ion-icon>
+							<span>{% trans "Codice Paghe" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.codice_paghe|default:_("None")}}</span>
+					</li>
 
-				<h6 class="fw-bold mt-4 mb-2">{% trans "Residenza" %}</h6>
-				<ul class="oh-profile__card-info-list">
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="home-outline"></ion-icon><span>{% trans "Address" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_address|default:_("None")}}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="business-outline"></ion-icon><span>{% trans "City" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_citta|default:_("None")}}{% if employee.residenza_provincia %} ({{employee.residenza_provincia}}){% endif %}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="flag-outline"></ion-icon><span>{% trans "Country" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_country|default:_("None")}}{% if employee.residenza_state %}, {{employee.residenza_state}}{% endif %}</span></li>
-					<li class="oh-profile__card-info-item"><span class="oh-profile__info-label mb-1"><ion-icon name="locate-outline"></ion-icon><span>{% trans "Zip Code" %}</span></span><span class="oh-profile__info-value">{{employee.residenza_zip|default:_("None")}}</span></li>
+					<li class="oh-profile__card-info-item">
+						<span class="oh-profile__info-label mb-1">
+							<ion-icon name="information-circle-outline"></ion-icon>
+						<span>{% trans "IBAN" %}</span>
+						</span>
+						<span class="oh-profile__info-value">{{employee.employee_bank_details.account_number|default:_("None")}}</span>
+					</li>
 				</ul>
 			</div>
 		</div>
 	</div>
 	<div class="col-sm-12 col-md-12 col-lg-8">
-		<div class="oh-card oh-card--margin">
-			<div class="oh-tabs">
-				<ul class="oh-tabs__tablist">
-					<li class="oh-tabs__tab oh-tabs__tab--active" data-target="#tab_1">
-						<div>
-							<img src="{% static 'images/ui/work-info.png' %}" alt=""
-								style="width: 25px; height: 25px; margin-right: 3px;opacity: 0.7" />
-							{% trans "Work Information" %}
+		{% if perms.employee.view_employee or perms.payroll.view_contract or request.user == employee.employee_user_id %}
+			{% if "payroll"|app_installed %}
+				<div class="oh-card oh-card--margin">
+					<div class="oh-card__header d-flex justify-content-between align-items-center">
+						<span class="oh-card__title oh-card__title--sm fw-bold me-2">{% trans "Contract details" %}</span>
+						<div class="d-flex gap-2">
+							{% if perms.payroll.add_contract %}
+							<a href="{% url 'contract-create' %}?employee_id={{employee.id}}&next={% url 'employee-view-individual' employee.id %}" class="oh-btn oh-btn--info-outline">
+								<ion-icon name="add-outline"></ion-icon>
+								{% trans "Add Contract" %}
+							</a>
+							{% endif %}
+							{% if perms.payroll.change_contract %}
+							<a href="{% url 'variazione-oraria-create' employee.id %}?next={% url 'employee-view-individual' employee.id %}" class="oh-btn oh-btn--warning-outline">
+								<ion-icon name="time-outline"></ion-icon>
+								{% trans "Variazione Oraria" %}
+							</a>
+							<a href="{% url 'contract-level-create' employee.id %}?next={% url 'employee-view-individual' employee.id %}" class="oh-btn oh-btn--secondary-outline">
+								<ion-icon name="layers-outline"></ion-icon>
+								{% trans "Livello" %}
+							</a>
+							{% endif %}
 						</div>
-					</li>
-
-					{% if "payroll"|app_installed %}
-						{% if perms.employee.view_employee or perms.payroll.view_contract or request.user == employee.employee_user_id %}
-							<li class="oh-tabs__tab" data-target="#tab_2">
-								<div>
-									<img src="{% static 'images/ui/contract.png' %}" alt=""
-										style="width: 25px; height: 25px; margin-right: 3px" />
-									{% trans "Contract details" %}
-								</div>
-							</li>
-						{% endif %}
-					{% endif %}
-				</ul>
-				<div class="oh-tabs__contents" id="view-container">
-					<div class="oh-tabs__content oh-tabs__content--active" id="tab_1">
-						<div class="oh-card__header">
-							<span class="oh-card__title oh-card__title--sm fw-bold me-2">{% trans "Work Information" %}</span>
-						</div>
-						<div class="oh-card__body mt-4">
-							<div class="row">
-								<div class="col-12 col-sm-12 col-md-12 col-lg-6">
-									<ul class="oh-profile__card-info-list">
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="construct-outline"></ion-icon>
-												<span>{% trans "Department" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.department_id|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="time-outline"></ion-icon>
-												<span>{% trans "Shift Information" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.shift_id|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="briefcase-outline"></ion-icon>
-												<span>{% trans "Employee Type" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.employee_type_id|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="person-circle-outline"></ion-icon>
-												<span>{% trans "Reporting Manager" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.reporting_manager_id|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="business-outline"></ion-icon>
-												<span>{% trans "Work Location" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.location|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="calendar-outline"></ion-icon>
-												<span>{% trans "End Date" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value dateformat_changer">{{employee.employee_work_info.contract_end_date|default:_("None")}}</span>
-										</li>
-									</ul>
-								</div>
-
-								<div class="col-12 col-sm-12 col-md-12 col-lg-6">
-									<ul class="oh-profile__card-info-list">
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="briefcase-outline"></ion-icon>
-												<span>{% trans "Job Position" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.job_position_id|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="time-outline"></ion-icon>
-												<span>{% trans "Work Type" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.work_type_id|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="cash-outline"></ion-icon>
-												<span>{% trans "Salary" %}</span>
-											</span>
-											{% if employee.employee_work_info.basic_salary %}
-												<span class="oh-profile__info-value">
-													{% if perms.employee.view_employee or request.user == employee.employee_user_id %}
-														{{employee.employee_work_info.basic_salary}}
-													{% else %}
-														**********
-													{% endif %}
-												</span>
-											{% else %}
-												<span class="oh-profile__info-value">{% trans "None" %}</span>
-											{% endif %}
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="business-outline"></ion-icon>
-												<span>{% trans "Company" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value">{{employee.employee_work_info.company_id|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="calendar-outline"></ion-icon>
-												<span>{% trans "Joining Date" %}</span>
-											</span>
-											<span
-												class="oh-profile__info-value dateformat_changer">{{employee.employee_work_info.date_joining|default:_("None")}}</span>
-										</li>
-
-										<li class="oh-profile__card-info-item">
-											<span class="oh-profile__info-label mb-1">
-												<ion-icon name="business-outline"></ion-icon>
-												<span>{% trans "Tags" %}</span>
-											</span>
-											<div style="display: flex; flex-wrap: wrap;">
-												{% if employee.employee_work_info.tags.all %}
-													{% for i in employee.employee_work_info.tags.all %}
-														{% with tag_width=i.title|length %}
-														<span class="oh-profile__info-value mt-1 mb-1 mr-1"
-															style="background-color: {{ i.color }};
-																		font-size: .8rem; padding: 4px 10px; border-radius: 18px; font-weight: 600; width: {{ tag_width }}em;">{{ i.title }}</span>
-														{% endwith %}
-													{% endfor %}
-												{% else %}
-												<span class="oh-profile__info-value dateformat_changer">{% trans "None" %}</span>
-												{% endif %}
-											</div>
-										</li>
-
-									</ul>
-								</div>
+					</div>
+					<div class="oh-card__body mt-2">
+						<style>
+							#contractDetailsTabs input[type="radio"] { display: none; }
+							#contractDetailsTabs .cdt-tabs { display: flex; gap: 0; border-bottom: 2px solid #eee; margin-bottom: 0; }
+							#contractDetailsTabs .cdt-tab-label {
+								padding: 10px 20px; cursor: pointer; font-weight: 600; color: #666;
+								border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+							}
+							#contractDetailsTabs .cdt-tab-label:hover { color: #333; }
+							#contractDetailsTabs #cdt_radio_contratti:checked ~ .cdt-tabs .cdt-label-contratti,
+							#contractDetailsTabs #cdt_radio_variazione:checked ~ .cdt-tabs .cdt-label-variazione,
+							#contractDetailsTabs #cdt_radio_livello:checked ~ .cdt-tabs .cdt-label-livello {
+								color: #333; border-bottom-color: #f59e0b;
+							}
+							#contractDetailsTabs .cdt-panel { display: none; padding-top: 8px; }
+							#contractDetailsTabs #cdt_radio_contratti:checked ~ #cdt_panel_contratti { display: block; }
+							#contractDetailsTabs #cdt_radio_variazione:checked ~ #cdt_panel_variazione { display: block; }
+							#contractDetailsTabs #cdt_radio_livello:checked ~ #cdt_panel_livello { display: block; }
+						</style>
+						<div id="contractDetailsTabs">
+							<input type="radio" name="cdt_tab" id="cdt_radio_contratti" checked>
+							<input type="radio" name="cdt_tab" id="cdt_radio_variazione">
+							<input type="radio" name="cdt_tab" id="cdt_radio_livello">
+							<div class="cdt-tabs">
+								<label class="cdt-tab-label cdt-label-contratti" for="cdt_radio_contratti">{% trans "Contratti" %}</label>
+								<label class="cdt-tab-label cdt-label-variazione" for="cdt_radio_variazione">{% trans "Variazione Oraria" %}</label>
+								<label class="cdt-tab-label cdt-label-livello" for="cdt_radio_livello">{% trans "Livello" %}</label>
+							</div>
+							<div class="cdt-panel" id="cdt_panel_contratti">
+								{% include "tabs/contract-tab.html" %}
+							</div>
+							<div class="cdt-panel" id="cdt_panel_variazione">
+								{% include "tabs/variazione-oraria-tab.html" %}
+							</div>
+							<div class="cdt-panel" id="cdt_panel_livello">
+								{% include "tabs/contract-level-tab.html" %}
 							</div>
 						</div>
 					</div>
-					{% if perms.employee.view_employee or perms.payroll.view_contract or request.user == employee.employee_user_id %}
-						{% if "payroll"|app_installed %}
-							<div class="oh-tabs__content" id="tab_2">
-								{% include "tabs/contract-tab.html" %}
-							</div>
-						{% endif %}
-					{% endif %}
+				</div>
+			{% endif %}
+		{% endif %}
+
+		<div class="oh-card oh-card--margin">
+			<div class="oh-card__header">
+				<span class="oh-card__title oh-card__title--sm fw-bold me-2">{% trans "Work Information" %}</span>
+			</div>
+			<div class="oh-card__body mt-4">
+				<div class="row">
+					<div class="col-12 col-sm-12 col-md-12 col-lg-6">
+						<ul class="oh-profile__card-info-list">
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="business-outline"></ion-icon>
+									<span>{% trans "Area Tipo" %}</span>
+								</span>
+								<span class="oh-profile__info-value">{{employee.employee_work_info.work_area_type|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="barcode-outline"></ion-icon>
+									<span>{% trans "Codice Reparto" %}</span>
+								</span>
+								<span class="oh-profile__info-value">{{employee.employee_work_info.department_code|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="construct-outline"></ion-icon>
+									<span>{% trans "Department" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.department_id|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="time-outline"></ion-icon>
+									<span>{% trans "Shift Information" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.shift_id|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="briefcase-outline"></ion-icon>
+									<span>{% trans "Employee Type" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.employee_type_id|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="person-circle-outline"></ion-icon>
+									<span>{% trans "Reporting Manager" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.reporting_manager_id|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="business-outline"></ion-icon>
+									<span>{% trans "Work Location" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.location|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="storefront-outline"></ion-icon>
+									<span>{% trans "Codice Negozio" %}</span>
+								</span>
+								<span class="oh-profile__info-value">{{employee.employee_work_info.store_code|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="storefront-outline"></ion-icon>
+									<span>{% trans "Negozio" %}</span>
+								</span>
+								<span class="oh-profile__info-value">{{employee.employee_work_info.store_name|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="calendar-outline"></ion-icon>
+									<span>{% trans "End Date" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value dateformat_changer">{{employee.employee_work_info.contract_end_date|default:_("None")}}</span>
+							</li>
+						</ul>
+					</div>
+
+					<div class="col-12 col-sm-12 col-md-12 col-lg-6">
+						<ul class="oh-profile__card-info-list">
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="briefcase-outline"></ion-icon>
+									<span>{% trans "Job Position" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.job_position_id|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="time-outline"></ion-icon>
+									<span>{% trans "Work Type" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.work_type_id|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="cash-outline"></ion-icon>
+									<span>{% trans "Salary" %}</span>
+								</span>
+								{% if employee.employee_work_info.basic_salary %}
+									<span class="oh-profile__info-value">
+										{% if perms.employee.view_employee or request.user == employee.employee_user_id %}
+											{{employee.employee_work_info.basic_salary}}
+										{% else %}
+											**********
+										{% endif %}
+									</span>
+								{% else %}
+									<span class="oh-profile__info-value">{% trans "None" %}</span>
+								{% endif %}
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="business-outline"></ion-icon>
+									<span>{% trans "Company" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value">{{employee.employee_work_info.company_id|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="calendar-outline"></ion-icon>
+									<span>{% trans "Joining Date" %}</span>
+								</span>
+								<span
+									class="oh-profile__info-value dateformat_changer">{{employee.employee_work_info.date_joining|default:_("None")}}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="document-text-outline"></ion-icon>
+									<span>{% trans "Esporta Cedolino" %}</span>
+								</span>
+								<span class="oh-profile__info-value">{% if employee.employee_work_info.export_payslip %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="copy-outline"></ion-icon>
+									<span>{% trans "Cedolino Speculare" %}</span>
+								</span>
+								<span class="oh-profile__info-value">{% if employee.employee_work_info.mirror_payslip %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="trophy-outline"></ion-icon>
+									<span>{% trans "Premi" %}</span>
+								</span>
+								<span class="oh-profile__info-value">{% if employee.employee_work_info.premi %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</span>
+							</li>
+
+							<li class="oh-profile__card-info-item">
+								<span class="oh-profile__info-label mb-1">
+									<ion-icon name="business-outline"></ion-icon>
+									<span>{% trans "Tags" %}</span>
+								</span>
+								<div style="display: flex; flex-wrap: wrap;">
+									{% if employee.employee_work_info.tags.all %}
+										{% for i in employee.employee_work_info.tags.all %}
+											{% with tag_width=i.title|length %}
+											<span class="oh-profile__info-value mt-1 mb-1 mr-1 profile-tag-badge"
+												data-tag-color="{{ i.color }}"
+												data-tag-width="{{ tag_width }}"
+												style="font-size: .8rem; padding: 4px 10px; border-radius: 18px; font-weight: 600;">{{ i.title }}</span>
+											{% endwith %}
+										{% endfor %}
+									{% else %}
+									<span class="oh-profile__info-value dateformat_changer">{% trans "None" %}</span>
+									{% endif %}
+								</div>
+							</li>
+
+						</ul>
+					</div>
 				</div>
 			</div>
 		</div>
-		{% if perms.employee.view_employeebankdetails or request.user == employee.employee_user_id %}
+		{% comment %} Bank Information section hidden
+	{% if perms.employee.view_employeebankdetails or request.user == employee.employee_user_id %}
 			<div class="oh-card oh-card--margin">
 				<div class="oh-card__header">
 					<span class="oh-card__title oh-card__title--sm fw-bold me-2">{% trans "Bank Information" %}</span>
@@ -372,7 +557,7 @@
 								<li class="oh-profile__card-info-item">
 									<span class="oh-profile__info-label mb-1">
 										<ion-icon name="information-circle-outline"></ion-icon>
-										<span>{% trans "Account Number" %}</span>
+									<span>{% trans "IBAN" %}</span>
 									</span>
 									<span
 										class="oh-profile__info-value">{{employee.employee_bank_details.account_number|default:_("None")}}</span>
@@ -401,17 +586,20 @@
 				</div>
 			</div>
 		{% endif %}
+	{% endcomment %}
 	</div>
 </div>
+
 <script>
-	$(document).ready(function () {
-		$(".oh-tabs__tab[data-target]").click(function (e) {
-			e.preventDefault();
-			var newActiveTab = $(this).attr("data-target");
-			$(".oh-tabs__content--active").toggleClass("oh-tabs__content--active");
-			$(".oh-tabs__tab--active").toggleClass("oh-tabs__tab--active");
-			$(`[data-target="${newActiveTab}"]`).toggleClass("oh-tabs__tab--active");
-			$(newActiveTab).toggleClass("oh-tabs__content--active");
-		});
+	document.querySelectorAll(".profile-tag-badge").forEach(function (tagElement) {
+		var tagColor = tagElement.dataset.tagColor;
+		var tagWidth = Number(tagElement.dataset.tagWidth);
+
+		if (tagColor) {
+			tagElement.style.backgroundColor = tagColor;
+		}
+		if (!Number.isNaN(tagWidth) && tagWidth > 0) {
+			tagElement.style.width = tagWidth + "em";
+		}
 	});
 </script>
