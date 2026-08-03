@@ -217,10 +217,7 @@
 					<div class="oh-profile oh-profile--lg me-3">
 						<div class="oh-profile__avatar">
 							<img src="{{employee.get_avatar}}" class="oh-profile-section__avatar"
-								style="border-radius: 10%;" alt="Username" {% if employee.employee_profile %}
-								onmouseover="enlargeImager(this)
-								$('#enlargeImageContainer').addClass('enlarge-image-container');" onmouseout="hideEnlargeImager()
-								$('#enlargeImageContainer').removeClass('enlarge-image-container');" {% endif %} />
+								style="border-radius: 10%;" alt="Username" />
 						</div>
 						{% if "attendance"|app_installed %}
 							{% if employee.check_online %}
