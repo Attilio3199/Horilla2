@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="oh-wrapper">
   <div
-    class="oh-general__tab-target oh-profile-section mb-4{% if not active_tab or active_tab != 'work' %} d-none{% endif %}"
+    class="oh-general__tab-target oh-profile-section mb-4 d-none"
     id="work"
     data-select2-id="select2-data-work"
   >
@@ -75,23 +75,13 @@
       class="oh-profile-section__card"
       data-select2-id="select2-data-29-vht3"
     >
-      {% include 'employee/update_form/edit_form_back_button.html' %}
       <div id="workMessage"></div>
-      <form
-        method="post"
-        hx-post="{% url 'employee-view-update' obj_id %}"
-        hx-target="#employee-update-form-root"
-        hx-swap="outerHTML"
-        hx-push-url="{% url 'employee-view-update' obj_id %}{% if container_mode %}?container=true{% endif %}"
-        hx-on::after-request="if(event.detail.successful){var b=document.getElementById('reloadMessagesButton');if(b)b.click();}"
-        action="{% url 'employee-view-update' obj_id %}"
-      >
+      <form method="post" action="">
         <input type="hidden" name="form" value="work">
         {% if work_info_history %}
           {{history_form.as_history_modal}}
         {% endif %}
         {% csrf_token %}
-        {% if container_mode %}<input type="hidden" name="container" value="true">{% endif %}
         {{work_form.as_p}}
         <hr class="mt-5 mb-3" />
         <div class="w-100 d-flex align-items-center justify-content-end">
@@ -104,9 +94,168 @@
         </div>
       </form>
     </div>
+
+    <div class="oh-profile-section__card mt-4">
+      <h5 class="mb-3">{% trans "Storico Mansioni" %}</h5>
+
+      <div class="table-responsive mb-3">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>{% trans "Mansione" %}</th>
+              <th>{% trans "DataInizioMansione" %}</th>
+              <th>{% trans "DataFineMansione" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in duty_histories %}
+            <tr>
+              <td>{{ row.duty_role_id }}</td>
+              <td class="dateformat_changer">{{ row.start_date }}</td>
+              <td class="dateformat_changer">{{ row.end_date|default:_("In corso") }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center">{% trans "Nessuna mansione registrata" %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="form" value="duty-history" />
+        {{ duty_form.new_duty }}
+        <div class="row">
+          <div class="col-12 col-md-4">
+            <label class="oh-label">{{ duty_form.duty_role_id.label }}</label>
+            {{ duty_form.duty_role_id }}
+            {{ duty_form.duty_role_id.errors }}
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="oh-label">{{ duty_form.start_date.label }}</label>
+            {{ duty_form.start_date }}
+            {{ duty_form.start_date.errors }}
+          </div>
+          <div class="col-12 col-md-4 mt-2 mt-md-0">
+            <label class="oh-label">{{ duty_form.end_date.label }}</label>
+            {{ duty_form.end_date }}
+            {{ duty_form.end_date.errors }}
+          </div>
+        </div>
+
+        {% if duty_form.non_field_errors %}
+        <div class="mt-2 text-danger">{{ duty_form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="w-100 d-flex align-items-center justify-content-end mt-3">
+          <button type="submit" class="oh-btn oh-btn--secondary oh-btn--w-100-resp">
+            {% trans "Aggiungi Mansione" %}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 <script>
+  function toggleWorkAreaFieldsGlobal() {
+    var areaField = document.getElementById("id_work_area_type");
+    if (!areaField) return;
+
+    var value = (areaField.value || "").toString().trim().toUpperCase();
+    if (value !== "SEDE" && value !== "NEGOZI") {
+      var selectedOption = areaField.options[areaField.selectedIndex];
+      var text = selectedOption
+        ? (selectedOption.text || "").toString().trim().toUpperCase()
+        : "";
+      if (text.indexOf("SEDE") !== -1) value = "SEDE";
+      else if (text.indexOf("NEGOZI") !== -1 || text.indexOf("NEGOZIO") !== -1)
+        value = "NEGOZI";
+    }
+
+    var sedeFields = document.querySelectorAll(".work-area-sede-field");
+    var storeFields = document.querySelectorAll(".work-area-store-field");
+
+    sedeFields.forEach(function (el) {
+      el.style.display = value === "SEDE" ? "" : "none";
+    });
+    storeFields.forEach(function (el) {
+      el.style.display = value === "NEGOZI" ? "" : "none";
+    });
+  }
+
+  document.addEventListener("change", function (event) {
+    if (event.target && event.target.id === "id_work_area_type") {
+      toggleWorkAreaFieldsGlobal();
+    }
+  });
+
+  if (window.jQuery) {
+    $(document).on("select2:select", "#id_work_area_type", toggleWorkAreaFieldsGlobal);
+    $(document).on("select2:close", "#id_work_area_type", toggleWorkAreaFieldsGlobal);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(toggleWorkAreaFieldsGlobal, 0);
+    setTimeout(toggleWorkAreaFieldsGlobal, 120);
+    setTimeout(toggleWorkAreaFieldsGlobal, 350);
+
+    var dutySelect = document.getElementById("id_duty_role_id");
+    var hiddenNewDuty = document.getElementById("id_new_duty");
+
+    function askNewDutyName() {
+      if (!dutySelect || !hiddenNewDuty || dutySelect.value !== "create") {
+        return true;
+      }
+      if ((hiddenNewDuty.value || "").trim()) {
+        return true;
+      }
+
+      var dutyName = window.prompt("Inserisci la nuova mansione");
+      if (!dutyName || !dutyName.trim()) {
+        dutySelect.value = "";
+        hiddenNewDuty.value = "";
+        if (window.jQuery) {
+          $(dutySelect).trigger("change.select2");
+        }
+        return false;
+      }
+
+      hiddenNewDuty.value = dutyName.trim();
+      return true;
+    }
+
+    if (dutySelect && hiddenNewDuty) {
+      dutySelect.addEventListener("change", function () {
+        if (dutySelect.value !== "create") {
+          hiddenNewDuty.value = "";
+          return;
+        }
+        askNewDutyName();
+      });
+
+      if (window.jQuery) {
+        $(document).on("select2:select", "#id_duty_role_id", function () {
+          if (dutySelect.value !== "create") {
+            hiddenNewDuty.value = "";
+            return;
+          }
+          askNewDutyName();
+        });
+      }
+
+      var dutyForm = dutySelect.closest('form');
+      if (dutyForm) {
+        dutyForm.addEventListener("submit", function (event) {
+          if (!askNewDutyName()) {
+            event.preventDefault();
+          }
+        });
+      }
+    }
+  });
+
   function onDynamicCreate(value, id) {
     if (value === "create") {
       $(id).click();
@@ -123,7 +272,7 @@
       createText = "Create New Job Position";
       emptyText = "---Choose Job Position---";
       $("#id_job_role_id").html(
-        '<option value="">{% trans "---Choose Job Role---" %}</option>'
+        '<option value="">---Choose Job Role---</option>'
       );
     } else if (id === "#dynamicJobPosition") {
       url = '{% url "get-job-roles" %}';

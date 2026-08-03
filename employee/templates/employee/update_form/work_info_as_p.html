@@ -1,0 +1,228 @@
+{% load i18n %}
+{{ form.non_field_errors }}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.work_area_type.label }}</label>
+            {{ form.work_area_type }}
+            {{ form.work_area_type.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 work-area-sede-field" {% if form.work_area_type.value != 'SEDE' %}style="display:none"{% endif %}>
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.department_code.label }}</label>
+            {{ form.department_code }}
+            {{ form.department_code.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6 work-area-sede-field" {% if form.work_area_type.value != 'SEDE' %}style="display:none"{% endif %}>
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.department_id.label }}</label>
+            {{ form.department_id }}
+            {{ form.department_id.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6 work-area-store-field" {% if form.work_area_type.value != 'NEGOZI' %}style="display:none"{% endif %}>
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.store_code.label }}</label>
+            {{ form.store_code }}
+            {{ form.store_code.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6 work-area-store-field" {% if form.work_area_type.value != 'NEGOZI' %}style="display:none"{% endif %}>
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.store_name.label }}</label>
+            {{ form.store_name }}
+            {{ form.store_name.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Job Title" %}</label>
+            {{ form.job_position_id }}
+            {{ form.job_position_id.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Job Role" %}</label>
+            {{ form.job_role_id }}
+            {{ form.job_role_id.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Shift Information" %}</label>
+            {{ form.shift_id }}
+            {{ form.shift_id.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Work Type" %}</label>
+            {{ form.work_type_id }}
+            {{ form.work_type_id.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Employee Type" %}</label>
+            {{ form.employee_type_id }}
+            {{ form.employee_type_id.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Reporting Manager" %}</label>
+            {{ form.reporting_manager_id }}
+            {{ form.reporting_manager_id.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Company" %}</label>
+            {{ form.company_id }}
+            {{ form.company_id.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Work Location" %}</label>
+            {{ form.location }}
+            {{ form.location.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Work Email" %}</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Work Phone" %}</label>
+            {{ form.mobile }}
+            {{ form.mobile.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Basic Salary" %}</label>
+            {{ form.basic_salary }}
+            {{ form.basic_salary.errors }}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Salary Per Hour" %}</label>
+            {{ form.salary_hour }}
+            {{ form.salary_hour.errors }}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.export_payslip.label }}</label>
+            {{ form.export_payslip }}
+            {{ form.export_payslip.errors }}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.mirror_payslip.label }}</label>
+            {{ form.mirror_payslip }}
+            {{ form.mirror_payslip.errors }}
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="oh-input__group">
+            <label class="oh-label">{{ form.premi.label }}</label>
+            {{ form.premi }}
+            {{ form.premi.errors }}
+        </div>
+    </div>
+</div>
+
+{% if form.tags %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="oh-input__group">
+            <label class="oh-label">{% trans "Tags" %}</label>
+            {{ form.tags }}
+            {{ form.tags.errors }}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+(function () {
+    function getAreaValue() {
+        var areaField = document.getElementById("id_work_area_type");
+        if (!areaField) return "";
+        var value = (areaField.value || "").toString().trim().toUpperCase();
+        if (value === "SEDE" || value === "NEGOZI") {
+            return value;
+        }
+        var selectedOption = areaField.options[areaField.selectedIndex];
+        if (!selectedOption) return "";
+        var text = (selectedOption.text || "").toString().trim().toUpperCase();
+        if (text.indexOf("SEDE") !== -1) return "SEDE";
+        if (text.indexOf("NEGOZI") !== -1 || text.indexOf("NEGOZIO") !== -1) return "NEGOZI";
+        return "";
+    }
+
+    function toggleWorkAreaFields() {
+        var selected = getAreaValue();
+        var sedeFields = document.querySelectorAll('.work-area-sede-field');
+        var storeFields = document.querySelectorAll('.work-area-store-field');
+
+        sedeFields.forEach(function (el) {
+            el.style.display = selected === 'SEDE' ? '' : 'none';
+        });
+        storeFields.forEach(function (el) {
+            el.style.display = selected === 'NEGOZI' ? '' : 'none';
+        });
+    }
+
+    document.addEventListener('change', function (event) {
+        if (event.target && event.target.id === 'id_work_area_type') {
+            toggleWorkAreaFields();
+        }
+    });
+
+    if (window.jQuery) {
+        $(document).on('select2:select', '#id_work_area_type', toggleWorkAreaFields);
+    }
+
+    document.addEventListener('DOMContentLoaded', toggleWorkAreaFields);
+    setTimeout(toggleWorkAreaFields, 0);
+    setTimeout(toggleWorkAreaFields, 150);
+    setTimeout(toggleWorkAreaFields, 400);
+})();
+</script>
