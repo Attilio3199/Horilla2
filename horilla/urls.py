@@ -23,6 +23,7 @@ from django.urls import include, path, re_path
 from django.views.i18n import JavaScriptCatalog
 
 import notifications.urls
+from employee import views as employee_views
 
 from . import settings
 
@@ -76,6 +77,13 @@ def service_worker(request):
 
 
 urlpatterns = [
+    # The generic profile component historically emitted this root-level URL.
+    # Keep it compatible with the legacy employee About tab.
+    path(
+        "employeeprofileview-About/<int:pk>/",
+        employee_views.about_tab,
+        name="employeeprofileview-about-legacy",
+    ),
     path("sw.js", service_worker, name="service-worker"),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
