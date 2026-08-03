@@ -483,7 +483,9 @@ class EmployeeNav(HorillaNavView):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.search_url = reverse("employees-list")
+        # The employee landing page defaults to cards. The selector still
+        # permits switching to the list layout.
+        self.search_url = reverse("employees-card")
         self.search_in = [
             ("employee_work_info__reporting_manager_id", _("Reporting Manager")),
             (

@@ -39,6 +39,14 @@
                 <p class="text-xs font-semibold">{{ employee.experience|default:_('None') }}</p>
             </div>
             <div class="mb-2">
+                <span class="font-medium text-xs text-[#565E6C]">{% trans 'Marital Status' %}</span>
+                <p class="text-xs font-semibold">{{ employee.get_marital_status_display|default:_('None') }}</p>
+            </div>
+            <div class="mb-2">
+                <span class="font-medium text-xs text-[#565E6C]">{% trans 'Children' %}</span>
+                <p class="text-xs font-semibold">{{ employee.children|default:_('None') }}</p>
+            </div>
+            <div class="mb-2">
                 <span class="font-medium text-xs text-[#565E6C]">{% trans 'Emergency Contact' %}</span>
                 <p class="text-xs font-semibold">{{ employee.emergency_contact|default:_('None') }}</p>
             </div>
@@ -50,6 +58,35 @@
                 <span class="font-medium text-xs text-[#565E6C]">{% trans 'Emergency Contact Relation' %}</span>
                 <p class="text-xs font-semibold">{{ employee.emergency_contact_relation|default:_('None') }}</p>
             </div>
+            <hr class="my-4 border-dark-50">
+            <div class="mb-2">
+                <span class="font-medium text-xs text-[#565E6C]">{% trans 'Codice Fiscale' %}</span>
+                <p class="text-xs font-semibold">{{ employee.codice_fiscale|default:_('None') }}</p>
+            </div>
+            <div class="mb-2">
+                <span class="font-medium text-xs text-[#565E6C]">{% trans 'Codice Paghe' %}</span>
+                <p class="text-xs font-semibold">{{ employee.codice_paghe|default:_('None') }}</p>
+            </div>
+            <div class="mb-2">
+                <span class="font-medium text-xs text-[#565E6C]">{% trans 'Categoria Protetta' %}</span>
+                <p class="text-xs font-semibold">{% if employee.categoria_protetta %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</p>
+            </div>
+            <div class="mb-2">
+                <span class="font-medium text-xs text-[#565E6C]">{% trans 'Place of Birth' %}</span>
+                <p class="text-xs font-semibold">{{ employee.nascita_citta|default:_('None') }}{% if employee.nascita_provincia %} ({{ employee.nascita_provincia }}){% endif %}</p>
+            </div>
+            <hr class="my-4 border-dark-50">
+            <h6 class="mb-2 font-bold">{% trans 'Domicilio' %}</h6>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'Address' %}</span><p class="text-xs font-semibold">{{ employee.domicilio_address|default:_('None') }}</p></div>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'City' %}</span><p class="text-xs font-semibold">{{ employee.domicilio_citta|default:_('None') }}{% if employee.docimicilio_provincia %} ({{ employee.docimicilio_provincia }}){% endif %}</p></div>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'Country' %}</span><p class="text-xs font-semibold">{{ employee.domicilio_country|default:_('None') }}{% if employee.domicilio_state %}, {{ employee.domicilio_state }}{% endif %}</p></div>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'Zip Code' %}</span><p class="text-xs font-semibold">{{ employee.domicilio_zip|default:_('None') }}</p></div>
+            <hr class="my-4 border-dark-50">
+            <h6 class="mb-2 font-bold">{% trans 'Residenza' %}</h6>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'Address' %}</span><p class="text-xs font-semibold">{{ employee.residenza_address|default:_('None') }}</p></div>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'City' %}</span><p class="text-xs font-semibold">{{ employee.residenza_citta|default:_('None') }}{% if employee.residenza_provincia %} ({{ employee.residenza_provincia }}){% endif %}</p></div>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'Country' %}</span><p class="text-xs font-semibold">{{ employee.residenza_country|default:_('None') }}{% if employee.residenza_state %}, {{ employee.residenza_state }}{% endif %}</p></div>
+            <div class="mb-2"><span class="font-medium text-xs text-[#565E6C]">{% trans 'Zip Code' %}</span><p class="text-xs font-semibold">{{ employee.residenza_zip|default:_('None') }}</p></div>
         </div>
     </div>
     <div class="col-span-9" hx-get="{% url 'work-tab' %}?pk={{employee.pk}}" hx-trigger="load"></div>

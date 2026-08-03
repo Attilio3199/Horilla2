@@ -15,6 +15,33 @@
         </button>
     </div>
 </div>
+{% if categories %}
+    <div class="px-6 pb-2 flex gap-2 flex-wrap">
+        {% for category in categories %}
+            <button class="oh-btn oh-btn--light-bkg" hx-get="{% url 'document-category-tab' emp_id category.id %}" hx-target="#documentCategoryContent">{{ category.name }}</button>
+        {% endfor %}
+    </div>
+    <div id="documentCategoryContent"></div>
+{% endif %}
+<div class="mx-6 mb-4 border border-dark-50 rounded-md p-4">
+    <div class="flex justify-between items-center mb-3">
+        <span class="font-semibold">{% trans "Maternity" %}</span>
+        <button class="oh-btn oh-btn--light-bkg" data-toggle="oh-modal-toggle" data-target="#genericModal" hx-get="{% url 'maternita-form' emp_id %}" hx-target="#genericModalBody" title="{% trans 'Create' %}">
+            <ion-icon name="add-outline"></ion-icon>
+        </button>
+    </div>
+    {% for maternity in maternita_list %}
+        <div class="flex justify-between items-center py-2 border-t border-dark-50">
+            <span>{% trans "Child" %} {{ maternity.n_figlio }} · {{ maternity.nome_figlio|default:"—" }}</span>
+            <span class="flex gap-1">
+                <button class="oh-btn oh-btn--light-bkg" data-toggle="oh-modal-toggle" data-target="#genericModal" hx-get="{% url 'maternita-edit' emp_id maternity.id %}" hx-target="#genericModalBody" title="{% trans 'Edit' %}"><ion-icon name="create-outline"></ion-icon></button>
+                <form method="post" action="{% url 'maternita-delete' maternity.id %}">{% csrf_token %}<button class="oh-btn oh-btn--danger-outline" title="{% trans 'Delete' %}"><ion-icon name="trash-outline"></ion-icon></button></form>
+            </span>
+        </div>
+    {% empty %}
+        <span class="text-sm text-dark-500">{% trans "No maternity records." %}</span>
+    {% endfor %}
+</div>
 {% if documents %}
     <div class="p-6">
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -221,6 +248,20 @@
                     {% trans "No documents have been uploaded yet." %}
                 </p>
             </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if variazioni_orarie or contracts %}
+    <div class="mx-6 mt-4 border border-dark-50 rounded-md p-4">
+        <span class="font-semibold">{% trans "Contract documents" %}</span>
+        <div class="mt-3 flex gap-2 flex-wrap">
+            {% for contract in contracts %}
+                {% if contract.contract_document %}<a class="oh-btn oh-btn--light-bkg" href="{{ contract.contract_document.url }}" target="_blank"><ion-icon name="document-outline"></ion-icon>{{ contract.contract_name|default:"Contract" }}</a>{% endif %}
+            {% endfor %}
+            {% for variation in variazioni_orarie %}
+                {% if variation.attachment %}<a class="oh-btn oh-btn--light-bkg" href="{{ variation.attachment.url }}" target="_blank"><ion-icon name="document-attach-outline"></ion-icon>{% trans "Hourly variation" %} · {{ variation.contract_start_date|date:"d/m/Y" }}</a>{% endif %}
+            {% endfor %}
         </div>
     </div>
 {% endif %}
