@@ -1,0 +1,92 @@
+{% load i18n %}
+{% load employee_filter %}
+<style>
+    .variazione-compact-table .oh-sticky-table__sd,
+    .variazione-compact-table .oh-sticky-table__td,
+    .variazione-compact-table .oh-sticky-table__th {
+        padding: 4px 6px !important;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+</style>
+
+{% if variazioni_orarie %}
+    <div class="oh-sticky-table variazione-compact-table">
+        <div class="oh-sticky-table__table">
+            <div class="oh-sticky-table__thead">
+                <div class="oh-sticky-table__tr">
+                    <div class="oh-sticky-table__th" style="width: 44px; min-width: 44px;">{% trans "Lun" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 44px; min-width: 44px;">{% trans "Mar" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 44px; min-width: 44px;">{% trans "Mer" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 44px; min-width: 44px;">{% trans "Gio" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 44px; min-width: 44px;">{% trans "Ven" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 44px; min-width: 44px;">{% trans "Sab" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 44px; min-width: 44px;">{% trans "Dom" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 62px; min-width: 62px;">{% trans "OreSett" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 78px; min-width: 78px;">{% trans "Data Inizio" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 78px; min-width: 78px;">{% trans "Data Fine" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 110px; min-width: 110px;">{% trans "Contratto" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 40px; min-width: 40px;">{% trans "Doc" %}</div>
+                    {% if perms.payroll.change_contract %}
+                    <div class="oh-sticky-table__th oh-sticky-table__right" style="width: 80px; min-width: 80px;"></div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="oh-sticky-table__tbody">
+                {% for variazione in variazioni_orarie %}
+                <div class="oh-sticky-table__tr">
+                    <div class="oh-sticky-table__td" style="width: 44px; min-width: 44px; text-align: right;">{{ variazione.lun|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 44px; min-width: 44px; text-align: right;">{{ variazione.mar|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 44px; min-width: 44px; text-align: right;">{{ variazione.mer|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 44px; min-width: 44px; text-align: right;">{{ variazione.gio|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 44px; min-width: 44px; text-align: right;">{{ variazione.ven|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 44px; min-width: 44px; text-align: right;">{{ variazione.sab|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 44px; min-width: 44px; text-align: right;">{{ variazione.dom|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 62px; min-width: 62px; text-align: right; font-weight: bold;">
+                        {{ variazione.lun|add:variazione.mar|add:variazione.mer|add:variazione.gio|add:variazione.ven|add:variazione.sab|add:variazione.dom|italianfloat }}
+                    </div>
+                    <div class="oh-sticky-table__td" style="width: 78px; min-width: 78px;">{{ variazione.contract_start_date|date:"d/m/Y" }}</div>
+                    <div class="oh-sticky-table__td" style="width: 78px; min-width: 78px;">{% if variazione.contract_end_date %}{{ variazione.contract_end_date|date:"d/m/Y" }}{% else %}N/A{% endif %}</div>
+                    <div class="oh-sticky-table__td" style="width: 110px; min-width: 110px; font-size: 0.8rem; color: #666;">
+                        {{ variazione.contract.contract_name|default:"-" }}
+                    </div>
+                    <div class="oh-sticky-table__td" style="width: 40px; min-width: 40px; text-align: center;">
+                        {% if variazione.attachment %}
+                        <a href="{{ variazione.attachment.url }}" target="_blank" title="{% trans 'Visualizza documento' %}" style="display:block; width:100%; color: inherit; text-decoration: none;">
+                            <ion-icon name="document-attach-outline"></ion-icon>
+                        </a>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </div>
+                    {% if perms.payroll.change_contract %}
+                    <div class="oh-sticky-table__td oh-sticky-table__right" style="width: 80px; min-width: 80px;">
+                        <div class="oh-btn-group">
+                            <a
+                                onclick="event.stopPropagation()"
+                                class="oh-btn oh-btn--light-bkg w-100"
+                                href="{% url 'variazione-oraria-create' employee.id %}?variazione_id={{ variazione.id }}&next={% url 'employee-view-individual' employee.id %}"
+                                title="{% trans 'Update' %}"
+                            >
+                                <ion-icon name="create-outline" role="img" class="md hydrated" style="color: blue"></ion-icon>
+                            </a>
+                            <form method="post" action="{% url 'variazione-oraria-delete' variazione.id %}" onsubmit="event.stopPropagation(); return confirm('{% trans 'Do you want to delete this Variazione Oraria?' %}');">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{% url 'employee-view-individual' employee.id %}">
+                                <button type="submit" class="oh-btn oh-btn--danger-outline oh-btn--light-bkg w-100" title="{% trans 'Delete' %}">
+                                    <ion-icon name="trash-outline" role="img" class="md hydrated" aria-label="trash outline"></ion-icon>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="d-flex flex-column justify-content-center align-items-center" style="height: 30vh;">
+        <h5 class="oh-404__subtitle mb-3">{% trans "Nessuna variazione oraria registrata." %}</h5>
+    </div>
+{% endif %}
