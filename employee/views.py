@@ -832,6 +832,36 @@ def maternita_form(request, pk, maternita_id=None):
 
 
 @login_required
+@hx_request_required
+def maternita_new_form(request, emp_id):
+    """Legacy endpoint used by the customized employee Documents tab."""
+    return maternita_form(request, emp_id)
+
+
+@login_required
+@hx_request_required
+def maternita_edit_legacy(request, pk):
+    """Legacy one-argument edit endpoint used by the Documents tab."""
+    maternity = get_object_or_404(Maternita, id=pk)
+    return maternita_form(request, maternity.employee_id_id, maternity.id)
+
+
+@login_required
+@hx_request_required
+def maternita_documents(request, mat_id):
+    """Render documents associated with a maternity record."""
+    maternity = get_object_or_404(Maternita, id=mat_id)
+    documents = Document.objects.filter(maternita_id=mat_id).order_by(
+        "subcategory__name", "document_date"
+    )
+    return render(
+        request,
+        "tabs/htmx/maternita_documents_partial.html",
+        {"mat": maternity, "docs": documents},
+    )
+
+
+@login_required
 @permission_required("horilla_documents.delete_document")
 def maternita_delete(request, pk):
     maternity = get_object_or_404(Maternita, id=pk)

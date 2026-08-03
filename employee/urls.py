@@ -371,8 +371,12 @@ urlpatterns = [
     path("document-tab/<int:pk>/", views.document_tab, name="document-tab"),
     path("document-category-tab/<int:pk>/<int:category_id>/", views.document_category_tab, name="document-category-tab"),
     path("get-document-subcategories/", views.get_document_subcategories, name="get-document-subcategories"),
+    # Compatibility endpoints used by the restored customized Documents tab.
+    path("maternita-documents/<int:mat_id>/", views.maternita_documents, name="maternita-documents"),
+    path("maternita-new-form/<int:emp_id>/", views.maternita_new_form, name="maternita-new-form"),
+    path("maternita-edit/<int:pk>/", views.maternita_edit_legacy, name="maternita-edit"),
     path("maternita-form/<int:pk>/", views.maternita_form, name="maternita-form"),
-    path("maternita-form/<int:pk>/<int:maternita_id>/", views.maternita_form, name="maternita-edit"),
+    path("maternita-form/<int:pk>/<int:maternita_id>/", views.maternita_form, name="maternita-form-edit"),
     path("maternita-delete/<int:pk>/", views.maternita_delete, name="maternita-delete"),
     path("bonus-points-tab/<int:pk>/", views.bonus_points_tab, name="bonus-points-tab"),
     path(

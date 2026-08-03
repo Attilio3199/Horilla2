@@ -1,0 +1,27 @@
+{% load i18n %}
+{% if docs %}
+  {% regroup docs by subcategory as docs_by_sub %}
+  {% for sub_group in docs_by_sub %}
+    {% if sub_group.grouper %}
+      <div class="px-3 py-1" style="font-size:.72rem;color:#6c757d;border-left:3px solid #dee2e6;background:#fafafa;letter-spacing:.03em;">
+        {{ sub_group.grouper.name }}
+      </div>
+    {% endif %}
+    {% for document in sub_group.list %}
+      <div class="oh-user_permission-list_item accordion exclude-accordion-style" style="cursor:pointer; position:relative;">
+        <div class="oh-user_permission-list_profile" style="display:flex; align-items:center;"
+             hx-get="{% url 'view-file' document.id %}" hx-target="#viewFile"
+             data-toggle="oh-modal-toggle" data-target="#viewFileModal">
+          <div class="oh-feedback-card__name-container ms-3 title_form">
+            <span class="oh-card__title oh-card__title--sm fw-bold me-1">{{ document.subcategory.name|default:document.category.name|default:document.title|default:"—" }}</span>
+            {% if document.document_date %}<span class="oh-text--light">{% trans "Data Doc." %}: {{ document.document_date|date:"d/m/Y" }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% endfor %}
+{% else %}
+  <div class="d-flex justify-content-center align-items-center" style="height:15vh;">
+    <p class="text-muted small">{% trans "Nessun documento collegato a questa maternità." %}</p>
+  </div>
+{% endif %}
