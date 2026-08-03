@@ -333,6 +333,49 @@ def employee_view_individual(request, obj_id, **kwargs):
         except Exception as e:
             return render(request, "404.html", status=404)
 
+    employee_leaves = (
+        employee.available_leave.all() if apps.is_installed("leave") else None
+    )
+    enabled_block_unblock = (
+        AccountBlockUnblock.objects.exists()
+        and AccountBlockUnblock.objects.first().is_enabled
+    )
+    filtered_employee_ids = request.session.get("filtered_employees", [])
+    filtered_employees = Employee.objects.filter(id__in=filtered_employee_ids)
+    request_ids_str = json.dumps(
+        [
+            instance.id
+            for instance in paginator_qry(
+                filtered_employees, request.GET.get("page")
+            ).object_list
+        ]
+    )
+    requests_ids = (
+        ast.literal_eval(request_ids_str)
+        if isinstance(request_ids_str, str)
+        else request_ids_str
+    )
+    previous_id = next_id = None
+    if employee.id in requests_ids:
+        index = requests_ids.index(employee.id)
+        previous_id = requests_ids[index - 1] if index else None
+        next_id = requests_ids[index + 1] if index + 1 < len(requests_ids) else None
+
+    context = {
+        "employee": employee,
+        "previous": previous_id,
+        "next": next_id,
+        "requests_ids": requests_ids,
+        "current_date": date.today(),
+        "leave_request_ids": json.dumps([]),
+        "enabled_block_unblock": enabled_block_unblock,
+        "document_categories": DocumentCategory.objects.all(),
+    }
+    if request.user.employee_get == employee:
+        context["user_leaves"] = employee_leaves
+    else:
+        context["employee_leaves"] = employee_leaves
+
     # request_ids_str = json.dumps(
     #     [
     #         instance.id
@@ -384,7 +427,7 @@ def employee_view_individual(request, obj_id, **kwargs):
     return render(
         request,
         "employee/view/individual.html",
-        # context,
+        context,
     )
 
 
