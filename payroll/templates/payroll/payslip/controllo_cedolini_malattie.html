@@ -1,0 +1,228 @@
+{% extends 'index.html' %}{% block content %}{% load i18n %}{% load static %}
+
+<style>
+/* ── Badge-giorno ─────────────────────────────────────────────── */
+.badge-giorno {
+  display:inline-flex; align-items:center; gap:4px;
+  background:#d1e7dd; color:#0a3622; border:1px solid #a3cfbb;
+  border-radius:5px; padding:3px 7px; font-size:.78rem; font-weight:600;
+  white-space:nowrap;
+}
+.badge-giorno.weekend { background:#f8d7da; color:#58151c; border-color:#f1aeb5; }
+
+/* ── Mini strip 31 caselle ────────────────────────────────────── */
+.day-strip { display:flex; gap:2px; margin-top:6px; flex-wrap:nowrap; overflow:visible; }
+.day-cell {
+  width:22px; min-width:22px; height:22px; border-radius:3px;
+  font-size:.58rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  cursor:default; line-height:1;
+}
+.day-cell.active   { background:#198754; color:#fff; }
+.day-cell.we-active{ background:#dc3545; color:#fff; }
+.day-cell.inactive { background:#e9ecef; color:#adb5bd; }
+.day-cell.we-day   { background:#f5c6cb; color:#842029; } /* weekend senza ore */
+
+/* ── Card dipendente ──────────────────────────────────────────── */
+.mal-dip-card            { border-left:4px solid #dc3545; }
+.mal-dip-card .oh-card__header {
+  background:#fff5f5; padding:.5rem 1rem; border-bottom:1px solid #f1aeb5;
+}
+</style>
+
+<section class="oh-wrapper oh-main__topbar">
+  <div class="oh-main__titlebar oh-main__titlebar--left">
+    <h1 class="oh-main__titlebar-title fw-bold">{% trans "Controllo Malattie" %}</h1>
+  </div>
+  <div class="oh-main__titlebar-button-container">
+    <a href="{% url 'controllo-cedolini' %}" class="oh-btn oh-btn--light oh-btn--sm">
+      <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon>
+      {% trans "Torna al Controllo" %}
+    </a>
+    {% if mese and anno %}
+    <a href="{% url 'export-malattie-excel' %}?mese={{ mese }}&anno={{ anno }}"
+       class="oh-btn oh-btn--secondary oh-btn--sm">
+      <ion-icon name="document-text-outline" class="mr-1"></ion-icon>
+      {% trans "Excel" %}
+    </a>
+    <a href="{% url 'export-malattie-docx' %}?mese={{ mese }}&anno={{ anno }}"
+       class="oh-btn oh-btn--secondary oh-btn--sm">
+      <ion-icon name="document-outline" class="mr-1"></ion-icon>
+      {% trans "Word" %}
+    </a>
+    {% endif %}
+  </div>
+</section>
+
+<div class="oh-wrapper mt-3">
+
+  {# ── Selettore periodo ── #}
+  <div class="oh-card mb-3">
+    <div class="oh-card__header">
+      <h5 class="mb-0 fw-bold">{% trans "Periodo di riferimento" %}</h5>
+    </div>
+    <div class="oh-card__body">
+      {% if n_voci_malattia == 0 %}
+      <div class="alert alert-warning mb-0">
+        <ion-icon name="warning-outline" class="mr-1"></ion-icon>
+        {% trans "Nessuna voce configurata con codice_tipo_orario='MALATTIA' nel dizionario." %}
+      </div>
+      {% else %}
+      <form method="post" action="{% url 'controllo-cedolini-malattie' %}"
+            class="d-flex align-items-end gap-3 flex-wrap">
+        {% csrf_token %}
+        <div>
+          <label class="oh-label">{% trans "Mese / Anno" %}</label>
+          <select name="mese_anno" id="mese-ano-select" class="oh-input oh-input--sm"
+                  onchange="applyPeriodo(this)">
+            <option value="">— {% trans "seleziona" %} —</option>
+            {% for m, a in periodi %}
+            <option value="{{ m }}_{{ a }}"
+              {% if m == mese and a == anno %}selected{% endif %}>
+              {{ m|stringformat:"02d" }}/{{ a }}
+            </option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="mese" id="hidden-mese" value="{{ mese|default:'' }}">
+          <input type="hidden" name="anno" id="hidden-anno" value="{{ anno|default:'' }}">
+        </div>
+        <button type="submit" class="oh-btn oh-btn--secondary oh-btn--sm">
+          <ion-icon name="medkit-outline" class="mr-1"></ion-icon>
+          {% trans "Avvia Controllo" %}
+        </button>
+      </form>
+      <p class="mt-2 mb-0 text-muted small">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        {{ n_voci_malattia }} {% trans "voci MALATTIA configurate nel dizionario" %}
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if risultati is not None %}
+
+  {# ── Riepilogo + filtro ── #}
+  <div class="d-flex gap-3 mb-3 flex-wrap align-items-center">
+    <span class="badge bg-danger fs-6 px-3 py-2">
+      <strong>{{ n_dipendenti }}</strong> {% trans "dipendenti" %}
+    </span>
+    <span class="badge bg-secondary fs-6 px-3 py-2">
+      <strong>{{ n_giorni_tot }}</strong> {% trans "giorni malattia totali" %}
+    </span>
+    <div class="ms-auto">
+      <input type="search" id="mal-search" class="oh-input oh-input--sm"
+             style="min-width:230px;"
+             placeholder="{% trans 'Filtra per matricola o nominativo…' %}"
+             autocomplete="off">
+    </div>
+  </div>
+
+  {% if risultati %}
+
+  {# ── Una card per dipendente ── #}
+  {% for dip in risultati %}
+  <div class="oh-card mal-dip-card mb-3 mal-card"
+       data-cerca="{{ dip.matricola|lower }} {{ dip.lavoratore|lower }}">
+
+    <div class="oh-card__header d-flex align-items-center gap-3 flex-wrap">
+      <ion-icon name="person-outline" style="font-size:1.2rem;color:#dc3545;flex-shrink:0;"></ion-icon>
+      <span class="fw-bold">{{ dip.lavoratore|default:"—" }}</span>
+      {% if dip.matricola %}
+        <code class="text-muted" style="font-size:.85rem;">matr.&nbsp;{{ dip.matricola }}</code>
+      {% endif %}
+      <span class="ms-auto badge bg-danger">
+        {{ dip.voci|length }}&nbsp;{% trans "voce/i" %}
+      </span>
+    </div>
+
+    <div class="oh-card__body p-0">
+      <table class="table table-sm table-bordered mb-0" style="table-layout:fixed;width:100%;">
+        <colgroup>
+          <col style="width:90px;">
+          <col>
+          <col style="width:75px;">
+          <col style="width:50px;">
+          <col style="width:55%;">
+        </colgroup>
+        <thead class="table-light">
+          <tr>
+            <th class="text-center">{% trans "Cod." %}</th>
+            <th>{% trans "Descrizione voce" %}</th>
+            <th class="text-end">{% trans "Aliq." %}</th>
+            <th class="text-center">{% trans "Gg" %}</th>
+            <th>{% trans "Giorni di malattia" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for voce in dip.voci %}
+          <tr class="align-top">
+            <td class="text-center"><code class="fw-bold">{{ voce.cod_voce }}</code></td>
+            <td style="white-space:normal;word-break:break-word;">{{ voce.desc_voce|default:"—" }}</td>
+            <td class="text-end">
+              {% if voce.aliq_voce is not None %}{{ voce.aliq_voce|floatformat:2 }}%{% else %}—{% endif %}
+            </td>
+            <td class="text-center fw-bold {% if voce.n_giorni > 0 %}text-danger{% else %}text-muted{% endif %}">
+              {{ voce.n_giorni }}
+            </td>
+            <td>
+              {# Badge un giorno per pillola #}
+              <div class="d-flex flex-wrap gap-1">
+                {% for gd in voce.giorni %}
+                <span class="badge-giorno {% if gd.weekend %}weekend{% endif %}"
+                      title="{{ gd.dow }} {{ gd.g }}/{{ mese|stringformat:'02d' }}/{{ anno }}">
+                  {{ gd.dow }}&nbsp;{{ gd.g }}
+                  <span style="opacity:.65;font-weight:400;">&ndash;</span>
+                  {{ gd.v|floatformat:2 }}h
+                </span>
+                {% empty %}
+                <span class="text-muted small fst-italic">{% trans "nessun giorno attivo" %}</span>
+                {% endfor %}
+              </div>
+
+              {# Mini strip visiva #}
+              {% if voce.n_giorni > 0 %}
+              <div class="day-strip">
+                {% for cell in voce.strip %}{% if forloop.counter <= num_giorni %}
+                <div class="day-cell {% if cell.val %}{% if cell.we %}we-active{% else %}active{% endif %}{% else %}{% if cell.we %}inactive we-day{% else %}inactive{% endif %}{% endif %}"
+                     title="gg {{ forloop.counter }}{% if cell.val %}: {{ cell.val }}h{% endif %}">{{ forloop.counter }}</div>
+                {% endif %}{% endfor %}
+              </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% else %}
+  <div class="oh-card">
+    <div class="oh-card__body text-center py-5">
+      <ion-icon name="checkmark-circle-outline" style="font-size:3rem;color:#198754;"></ion-icon>
+      <p class="mt-3 mb-0 text-muted">{% trans "Nessuna malattia trovata per il periodo selezionato." %}</p>
+    </div>
+  </div>
+  {% endif %}
+
+  {% endif %}{# risultati is not None #}
+
+</div>
+
+<script>
+function applyPeriodo(sel) {
+  var v = sel.value; if (!v) return;
+  var p = v.split('_');
+  document.getElementById('hidden-mese').value = p[0] || '';
+  document.getElementById('hidden-anno').value = p[1] || '';
+}
+document.getElementById('mal-search')?.addEventListener('input', function () {
+  var q = this.value.toLowerCase().trim();
+  document.querySelectorAll('.mal-card').forEach(function (el) {
+    el.style.display = !q || (el.dataset.cerca || '').includes(q) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}
+

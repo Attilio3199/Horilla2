@@ -1,0 +1,3 @@
+{% load i18n %}
+<div class="oh-modal__dialog-header"><h2 class="oh-modal__dialog-title">{% trans "Maternity" %}</h2><button class="oh-modal__close"><ion-icon name="close-outline"></ion-icon></button></div>
+<div class="oh-modal__dialog-body"><form method="post" enctype="multipart/form-data">{% csrf_token %}{% for field in form.visible_fields %}<div class="mb-2"><label class="oh-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}{% for field in form.hidden_fields %}{{ field }}{% endfor %}<button class="oh-btn oh-btn--secondary" type="submit">{% trans "Save" %}</button></form></div>

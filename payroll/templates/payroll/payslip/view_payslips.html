@@ -213,6 +213,27 @@
                   >
                 </li>
               {% endif %}
+              <li class="oh-dropdown__item">
+                <a class="oh-dropdown__link" href="{% url 'controllo-cedolini' %}">{% trans "Controllo" %}</a>
+              </li>
+              <li class="oh-dropdown__item">
+                <a class="oh-dropdown__link" href="{% url 'import-payslip-presenze' %}">{% trans "Importa Libro Presenze" %}</a>
+              </li>
+              <li class="oh-dropdown__item">
+                <a class="oh-dropdown__link" href="{% url 'import-payslip-corpo' %}">{% trans "Importa Corpo Busta Paga" %}</a>
+              </li>
+              <li class="oh-dropdown__item">
+                <a class="oh-dropdown__link" href="{% url 'import-payslip-importi' %}">{% trans "Importa Premi" %}</a>
+              </li>
+              <li class="oh-dropdown__item">
+                <a class="oh-dropdown__link oh-dropdown__link--danger" href="{% url 'delete-payslip-corpo' %}">{% trans "Cancella Corpo Busta Paga" %}</a>
+              </li>
+              <li class="oh-dropdown__item">
+                <a class="oh-dropdown__link oh-dropdown__link--danger" href="{% url 'delete-payslip-presenze' %}">{% trans "Cancella Libro Presenze" %}</a>
+              </li>
+              <li class="oh-dropdown__item">
+                <a class="oh-dropdown__link oh-dropdown__link--danger" href="{% url 'delete-payslip-importi' %}">{% trans "Cancella Premi" %}</a>
+              </li>
             </ul>
           </div>
         </div>
@@ -241,6 +262,8 @@
     </form>
   </div>
 </section>
+
+{% include "payroll/payslip/presenze_summary_section.html" %}
 
 {% if payslips %} {% include "payroll/payslip/payslips_quick_filter.html" %}
 <div

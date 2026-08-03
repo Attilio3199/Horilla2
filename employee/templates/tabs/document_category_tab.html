@@ -1,0 +1,10 @@
+{% load i18n %}
+<div class="p-3">
+  <h6>{{ category.name }}</h6>
+  {% for document in documents %}
+    <div class="oh-card oh-card--margin p-2">
+      {{ document.subcategory|default:"—" }} · {{ document.title|default:"—" }}
+      {% if document.document %}<a class="float-end" target="_blank" href="{{ document.document.url }}"><ion-icon name="document-outline"></ion-icon></a>{% endif %}
+    </div>
+  {% empty %}<span class="oh-text--light">{% trans "No documents in this category." %}</span>{% endfor %}
+</div>

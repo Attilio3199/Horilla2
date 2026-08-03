@@ -7,6 +7,16 @@
     }
 </style>
 {% if contracts %}
+    {% if perms.payroll.change_contract %}
+        <div class="d-flex justify-content-end mb-2">
+            <a class="oh-btn oh-btn--warning-outline" href="{% url 'variazione-oraria-create' employee.id %}?next={% url 'employee-view-individual' employee.id %}">
+                <ion-icon name="time-outline"></ion-icon>{% trans "Variazione Oraria" %}
+            </a>
+            <a class="oh-btn oh-btn--secondary-outline" href="{% url 'contract-level-create' employee.id %}?next={% url 'employee-view-individual' employee.id %}">
+                <ion-icon name="layers-outline"></ion-icon>{% trans "Livello" %}
+            </a>
+        </div>
+    {% endif %}
     <div class="oh-sticky-table height-adj">
         <div class="oh-sticky-table__table">
             <div class="oh-sticky-table__thead">
@@ -78,9 +88,39 @@
                 </div>
                 {% endfor %}
             </div>
-        </div>
+    </div>
 {% else %}
     <div class="d-flex justify-content-center align-items-center" style="height:40vh">
         <h5 class="oh-404__subtitle">{% trans "There are no contracts at the moment." %}</h5>
     </div>
 {% endif %}
+
+<div class="mt-4">
+    <h6 class="fw-bold">{% trans "Variazioni Orarie" %}</h6>
+    {% if variazioni_orarie %}
+        <div class="oh-sticky-table">
+            <div class="oh-sticky-table__table">
+                <div class="oh-sticky-table__thead"><div class="oh-sticky-table__tr">
+                    <div class="oh-sticky-table__th">{% trans "Start Date" %}</div>
+                    <div class="oh-sticky-table__th">{% trans "End Date" %}</div>
+                    <div class="oh-sticky-table__th">{% trans "Weekly Hours" %}</div>
+                    {% if perms.payroll.change_contract %}<div class="oh-sticky-table__th"></div>{% endif %}
+                </div></div>
+                <div class="oh-sticky-table__tbody">
+                    {% for variation in variazioni_orarie %}
+                        <div class="oh-sticky-table__tr">
+                            <div class="oh-sticky-table__td dateformat_changer">{{ variation.contract_start_date }}</div>
+                            <div class="oh-sticky-table__td dateformat_changer">{{ variation.contract_end_date|default:"—" }}</div>
+                            <div class="oh-sticky-table__td">{{ variation.lun|default:0 }} / {{ variation.mar|default:0 }} / {{ variation.mer|default:0 }} / {{ variation.gio|default:0 }} / {{ variation.ven|default:0 }} / {{ variation.sab|default:0 }} / {{ variation.dom|default:0 }}</div>
+                            {% if perms.payroll.change_contract %}<div class="oh-sticky-table__td"><div class="oh-btn-group"><a class="oh-btn oh-btn--light-bkg" href="{% url 'variazione-oraria-create' employee.id %}?variazione_id={{ variation.id }}&next={% url 'employee-view-individual' employee.id %}" title="{% trans 'Update' %}"><ion-icon name="create-outline"></ion-icon></a><form method="post" action="{% url 'variazione-oraria-delete' variation.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'employee-view-individual' employee.id %}"><button class="oh-btn oh-btn--danger-outline" title="{% trans 'Delete' %}"><ion-icon name="trash-outline"></ion-icon></button></form></div></div>{% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <span class="oh-text--light">{% trans "No hourly variations recorded." %}</span>
+    {% endif %}
+</div>
+
+{% include "tabs/contract-level-tab.html" %}

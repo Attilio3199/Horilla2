@@ -1,0 +1,652 @@
+{% extends 'index.html' %}{% block content %}{% load i18n %}{% load static %}
+
+<section class="oh-wrapper oh-main__topbar">
+  <div class="oh-main__titlebar oh-main__titlebar--left">
+    <h1 class="oh-main__titlebar-title fw-bold">{% trans "Controllo Cedolini" %}</h1>
+  </div>
+  <div class="oh-main__titlebar-button-container">
+    <a href="{% url 'controllo-cedolini' %}" class="oh-btn oh-btn--light oh-btn--sm">
+      <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon>
+      {% trans "Torna al Controllo" %}
+    </a>
+  </div>
+</section>
+
+<div class="oh-wrapper mt-3">
+
+  {# ── Selettore periodo (GET) ── #}
+  <div class="oh-card mb-3">
+    <div class="oh-card__header">
+      <h5 class="mb-0 fw-bold">{% trans "Periodo di riferimento" %}</h5>
+    </div>
+    <div class="oh-card__body">
+      <form method="get" action="{% url 'controllo-cedolini-presenze' %}" class="d-flex align-items-end gap-3 flex-wrap">
+        <div>
+          <label class="oh-label">{% trans "Mese / Anno" %}</label>
+          <select name="mese_anno" class="oh-input oh-input--sm" id="mese-anno-select" onchange="applyPeriodo(this)">
+            <option value="">— {% trans "seleziona" %} —</option>
+            {% for p in periodi %}
+            <option value="{{ p.mese }}_{{ p.anno }}"
+              {% if p.mese == mese and p.anno == anno %}selected{% endif %}>
+              {{ p.mese|stringformat:"02d" }}/{{ p.anno }}
+            </option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="mese" id="hidden-mese" value="{{ mese|default:'' }}">
+          <input type="hidden" name="anno" id="hidden-anno" value="{{ anno|default:'' }}">
+        </div>
+        <button type="submit" class="oh-btn oh-btn--secondary oh-btn--sm">
+          <ion-icon name="calendar-outline" class="mr-1"></ion-icon>
+          {% trans "Carica Periodo" %}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if mese and anno %}
+  <form method="post" action="{% url 'controllo-cedolini-presenze' %}" id="form-controllo">
+    {% csrf_token %}
+    <input type="hidden" name="mese" value="{{ mese }}">
+    <input type="hidden" name="anno" value="{{ anno }}">
+
+    {# ── Selezione dipendenti (sempre visibile) ── #}
+    <div class="oh-card mb-3">
+      <div class="oh-card__header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h6 class="mb-0 fw-bold">
+          {% trans "Dipendenti" %}
+          <span class="badge bg-secondary ms-1" id="dip-count">{{ dipendenti_mysql|length }}</span>
+        </h6>
+        <div class="d-flex gap-2">
+          <button type="button" class="oh-btn oh-btn--light oh-btn--sm" onclick="selezionaTutti()">
+            <ion-icon name="checkmark-done-outline" class="mr-1"></ion-icon>{% trans "Tutti" %}
+          </button>
+          <button type="button" class="oh-btn oh-btn--light oh-btn--sm" onclick="deselezionaTutti()">
+            <ion-icon name="close-outline" class="mr-1"></ion-icon>{% trans "Nessuno" %}
+          </button>
+        </div>
+      </div>
+      <div class="oh-card__body">
+        <input
+          type="search"
+          id="dip-search"
+          class="oh-input oh-input--sm w-100 mb-2"
+          placeholder="{% trans 'Cerca per nome o codice...' %}"
+          autocomplete="off"
+        >
+        <div id="dip-list" style="max-height:280px;overflow-y:auto;border:1px solid #dee2e6;border-radius:18px;padding:6px;">
+          {% for d in dipendenti_mysql %}
+          <div class="dip-item d-flex align-items-center gap-2 py-1 px-1">
+            <input
+              type="checkbox"
+              name="dipendenti"
+              value="{{ d.CODICEPERSONALE }}"
+              id="dip-{{ d.CODICEPERSONALE }}"
+              class="form-check-input dip-check"
+              style="width:1.1em;height:1.1em;cursor:pointer;"
+              {% if not selected_dip or d.CODICEPERSONALE in selected_dip %}checked{% endif %}
+            >
+            <label for="dip-{{ d.CODICEPERSONALE }}" style="cursor:pointer;margin:0;font-size:.875rem;">
+              <strong>{{ d.CODICEPERSONALE }}</strong> — {{ d.nome }}
+            </label>
+          </div>
+          {% empty %}
+          <p class="text-muted small mb-0">{% trans "Nessun dipendente trovato per questo periodo." %}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {# ── Voci da controllare (accordion chiuso) ── #}
+    <div class="oh-card mb-3">
+      <div class="oh-card__header d-flex align-items-center justify-content-between"
+           role="button" tabindex="0" aria-controls="dizionario-body" aria-expanded="false"
+           onclick="toggleDizionario()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleDizionario(); }"
+           style="cursor:pointer;">
+        <h6 class="mb-0 fw-bold" style="flex:1;">
+          {% trans "Voci da controllare" %}
+          <small class="text-muted ms-2" id="diz-attive-count">
+            ({% trans "attive" %}: {{ mappings_attivi_count }})
+          </small>
+        </h6>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button"
+                  class="oh-btn oh-btn--secondary oh-btn--sm"
+                  onclick="event.stopPropagation(); document.getElementById('modal-aggiungi-diz').style.display='flex';">
+            <ion-icon name="add-outline" class="mr-1"></ion-icon>
+            {% trans "Aggiungi" %}
+          </button>
+          <ion-icon name="chevron-down-outline" id="ico-dizionario" style="pointer-events:none;"></ion-icon>
+        </div>
+      </div>
+      <div id="dizionario-body" style="display:none;">
+        <div class="oh-card__body p-0">
+          <div class="table-responsive">
+            <table class="oh-table table table-sm table-bordered mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:44px;" class="text-center">{% trans "Attivo" %}</th>
+                  <th>{% trans "CODICE_TIPO_ORARIO" %}</th>
+                  <th class="text-center">{% trans "cod_voce" %}</th>
+                  <th class="text-center">{% trans "Tipo Ora" %}</th>
+                  <th style="width:44px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for m in mappings %}
+                <tr id="diz-row-{{ m.id }}" class="{% if not m.attivo %}text-muted{% endif %}">
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      id="attivo-{{ m.id }}"
+                      {% if m.attivo %}checked{% endif %}
+                      hx-post="{% url 'toggle-dizionario-attivo' m.id %}"
+                      hx-trigger="change"
+                      hx-swap="none"
+                      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                      onchange="toggleRowStyle({{ m.id }}, this.checked)"
+                      class="form-check-input"
+                      style="cursor:pointer;width:1.1em;height:1.1em;"
+                    >
+                  </td>
+                  <td>{{ m.codice_tipo_orario }}</td>
+                  <td class="text-center">{{ m.cod_voce|default:"—" }}</td>
+                  <td class="text-center">
+                    <span class="badge {% if m.tipo_ora == 'consuntivo' %}bg-primary{% else %}bg-secondary{% endif %}">
+                      {{ m.tipo_ora }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <form method="post" action="{% url 'elimina-dizionario' m.id %}"
+                          onsubmit="return confirm('{% trans "Eliminare questa voce?" %}');"
+                          style="margin:0;">
+                      {% csrf_token %}
+                      <input type="hidden" name="mese" value="{{ mese|default:'' }}">
+                      <input type="hidden" name="anno" value="{{ anno|default:'' }}">
+                      <button type="submit" class="btn btn-sm btn-outline-danger p-0 px-1"
+                              title="{% trans 'Elimina' %}">
+                        <ion-icon name="trash-outline" style="font-size:.95rem;"></ion-icon>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Regole avanzate ANY/SUM (non 1:1) ── #}
+    <div class="oh-card mb-3">
+      <div class="oh-card__header d-flex align-items-center justify-content-between"
+           role="button" tabindex="0" aria-controls="regole-avanzate-body" aria-expanded="false"
+           onclick="toggleRegoleAvanzate()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleRegoleAvanzate(); }"
+           style="cursor:pointer;">
+        <h6 class="mb-0 fw-bold" style="flex:1;">
+          {% trans "Regole avanzate ANY/SUM" %}
+          <small class="text-muted ms-2">
+            ({% trans "non 1:1" %}: {{ regole_controllo|length }})
+          </small>
+        </h6>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button"
+                  class="oh-btn oh-btn--secondary oh-btn--sm"
+                  onclick="event.stopPropagation(); document.getElementById('modal-aggiungi-regola').style.display='flex';">
+            <ion-icon name="add-outline" class="mr-1"></ion-icon>
+            {% trans "Aggiungi Regola" %}
+          </button>
+          <ion-icon name="chevron-down-outline" id="ico-regole-avanzate" style="pointer-events:none;"></ion-icon>
+        </div>
+      </div>
+      <div id="regole-avanzate-body" style="display:none;">
+        <div class="oh-card__body p-0">
+          <div class="table-responsive">
+            <table class="oh-table table table-sm table-bordered mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:44px;" class="text-center">{% trans "Attiva" %}</th>
+                  <th>{% trans "Direzione" %}</th>
+                  <th>{% trans "Sorgente" %}</th>
+                  <th class="text-center">{% trans "Modalita" %}</th>
+                  <th class="text-center">{% trans "No somma" %}</th>
+                  <th>{% trans "Destinazioni" %}</th>
+                  <th style="width:44px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in regole_controllo %}
+                <tr id="regola-row-{{ r.id }}" class="{% if not r.attivo %}text-muted{% endif %}">
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      {% if r.attivo %}checked{% endif %}
+                      hx-post="{% url 'toggle-regola-controllo-attiva' r.id %}"
+                      hx-trigger="change"
+                      hx-swap="none"
+                      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                      onchange="toggleRegolaRowStyle({{ r.id }}, this.checked)"
+                      class="form-check-input"
+                      style="cursor:pointer;width:1.1em;height:1.1em;"
+                    >
+                  </td>
+                  <td>{{ r.direzione }}</td>
+                  <td>
+                    <strong>{{ r.sorgente_valore }}</strong>
+                    {% if r.note %}<div class="small text-muted">{{ r.note }}</div>{% endif %}
+                  </td>
+                  <td class="text-center">
+                    <span class="badge {% if r.modalita == 'SUM' %}bg-warning text-dark{% else %}bg-primary{% endif %}">
+                      {{ r.modalita }}
+                    </span>
+                  </td>
+                  <td class="text-center">{% if r.no_somma_stesso_giorno %}✓{% else %}—{% endif %}</td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                      {% for d in r.destinazioni.all %}
+                      <span class="badge {% if d.attivo %}bg-secondary{% else %}bg-light text-muted{% endif %}">
+                        {{ d.destinazione_valore }}
+                        <input
+                          type="checkbox"
+                          {% if d.attivo %}checked{% endif %}
+                          hx-post="{% url 'toggle-regola-destinazione-attiva' d.id %}"
+                          hx-trigger="change"
+                          hx-swap="none"
+                          hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                          style="margin-left:6px; vertical-align:middle;"
+                        >
+                        <form method="post" action="{% url 'elimina-regola-destinazione' d.id %}" style="display:inline; margin-left:4px;">
+                          {% csrf_token %}
+                          <input type="hidden" name="mese" value="{{ mese|default:'' }}">
+                          <input type="hidden" name="anno" value="{{ anno|default:'' }}">
+                          <button type="submit" class="btn btn-link p-0 text-danger"
+                                  onclick="return confirm('{% trans "Eliminare destinazione?" %}');"
+                                  style="font-size:.75rem; line-height:1;">x</button>
+                        </form>
+                      </span>
+                      {% empty %}
+                      <span class="text-muted small">{% trans "Nessuna destinazione" %}</span>
+                      {% endfor %}
+                    </div>
+
+                    <form method="post" action="{% url 'aggiungi-regola-destinazione' r.id %}" class="d-flex gap-2">
+                      {% csrf_token %}
+                      <input type="hidden" name="mese" value="{{ mese|default:'' }}">
+                      <input type="hidden" name="anno" value="{{ anno|default:'' }}">
+                      <input type="text" name="destinazione_valore" class="oh-input oh-input--sm" maxlength="100"
+                             placeholder="{% trans 'Aggiungi destinazione' %}">
+                      <button type="submit" class="oh-btn oh-btn--light oh-btn--sm">{% trans "Aggiungi" %}</button>
+                    </form>
+                  </td>
+                  <td class="text-center">
+                    <form method="post" action="{% url 'elimina-regola-controllo' r.id %}"
+                          onsubmit="return confirm('{% trans "Eliminare questa regola?" %}');"
+                          style="margin:0;">
+                      {% csrf_token %}
+                      <input type="hidden" name="mese" value="{{ mese|default:'' }}">
+                      <input type="hidden" name="anno" value="{{ anno|default:'' }}">
+                      <button type="submit" class="btn btn-sm btn-outline-danger p-0 px-1"
+                              title="{% trans 'Elimina regola' %}">
+                        <ion-icon name="trash-outline" style="font-size:.95rem;"></ion-icon>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-3">
+                    {% trans "Nessuna regola avanzata configurata." %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── Avvia Controllo ── #}
+    <div class="d-flex justify-content-end mb-4">
+      <button type="submit" class="oh-btn oh-btn--warning">
+        <ion-icon name="git-compare-outline" class="mr-1"></ion-icon>
+        {% trans "Avvia Controllo" %}
+      </button>
+    </div>
+  </form>
+
+  {# ── Risultati ── #}
+  {% if n_controllati is not None %}
+  <div class="d-flex gap-3 mb-3 flex-wrap align-items-center">
+    <span class="badge bg-info fs-6 px-3 py-2">
+      <strong>{{ n_controllati }}</strong> {% trans "dipendenti controllati" %}
+    </span>
+    <span class="badge {% if n_con_diff %}bg-danger{% else %}bg-success{% endif %} fs-6 px-3 py-2">
+      <strong>{{ n_con_diff }}</strong> {% trans "con discrepanze" %}
+    </span>
+    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+      <strong>{{ n_discrepanze }}</strong> {% trans "differenze totali" %}
+    </span>
+    {% if risultati %}
+    <div class="ms-auto d-flex gap-2">
+      <form method="post" action="{% url 'export-controllo-excel' %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="mese" value="{{ mese }}">
+        <input type="hidden" name="anno" value="{{ anno }}">
+        {% for d in selected_dip %}<input type="hidden" name="dipendenti" value="{{ d }}">{% endfor %}
+        <button type="submit" class="oh-btn oh-btn--success oh-btn--sm">
+          <ion-icon name="document-outline" class="mr-1"></ion-icon>
+          {% trans "Scarica Excel" %}
+        </button>
+      </form>
+      <form method="post" action="{% url 'export-controllo-docx' %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="mese" value="{{ mese }}">
+        <input type="hidden" name="anno" value="{{ anno }}">
+        {% for d in selected_dip %}<input type="hidden" name="dipendenti" value="{{ d }}">{% endfor %}
+        <button type="submit" class="oh-btn oh-btn--secondary oh-btn--sm">
+          <ion-icon name="document-text-outline" class="mr-1"></ion-icon>
+          {% trans "Scarica Word" %}
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if risultati %}
+  {% for ris in risultati %}
+  <div class="oh-card mb-3">
+    <div class="oh-card__header d-flex align-items-center justify-content-between"
+         style="cursor:pointer;" onclick="toggleAcc('acc-{{ forloop.counter }}')">
+      <div>
+        <strong>{{ ris.lavoratore }}</strong>
+        <span class="text-muted ms-2 small">cod_dip: {{ ris.cod_dip }}</span>
+        {% if ris.matricola %}<span class="text-muted ms-2 small">matr: {{ ris.matricola }}</span>{% endif %}
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-danger">{{ ris.discrepanze|length }} diff.</span>
+        <ion-icon name="chevron-down-outline" id="ico-acc-{{ forloop.counter }}"></ion-icon>
+      </div>
+    </div>
+    <div id="acc-{{ forloop.counter }}" class="acc-body" style="display:none;">
+      <div class="oh-card__body p-0">
+        <div class="table-responsive">
+          <table class="oh-table table table-sm table-bordered table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center">{% trans "Giorno" %}</th>
+                <th class="text-center">{% trans "Ore App" %}</th>
+                <th>{% trans "Turno App" %}</th>
+                <th class="text-center">{% trans "Ore Cedolino" %}</th>
+                <th>{% trans "Turno Cedolino" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in ris.discrepanze %}
+              <tr>
+                <td class="text-center">{{ d.giorno|stringformat:"02d" }}/{{ mese|stringformat:"02d" }}/{{ anno }}</td>
+                <td class="text-center">{{ d.ore_turni }}h</td>
+                <td>{{ d.tipo_effettivo_app }}</td>
+                <td class="text-center">{{ d.ore_cedolino }}h</td>
+                <td>{{ d.codice_tipo_orario }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% else %}
+  <div class="oh-card">
+    <div class="oh-card__body text-center py-4">
+      <ion-icon name="checkmark-circle-outline" style="font-size:2.5rem;color:green;"></ion-icon>
+      <p class="mt-2 mb-0 fw-bold text-success">
+        {% trans "Nessuna discrepanza rilevata! Tutti i valori coincidono." %}
+      </p>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}{# end n_controllati #}
+
+  {% endif %}{# end mese and anno #}
+
+</div>
+
+<script>
+/* ── Periodo GET ── */
+function applyPeriodo(sel) {
+  var v = sel.value; if (!v) return;
+  var p = v.split('_');
+  document.getElementById('hidden-mese').value = p[0] || '';
+  document.getElementById('hidden-anno').value = p[1] || '';
+}
+document.querySelector('form[method="get"]').addEventListener('submit', function() {
+  applyPeriodo(document.getElementById('mese-anno-select'));
+});
+
+/* ── Dizionario accordion ── */
+function toggleDizionario() {
+  var body = document.getElementById('dizionario-body');
+  var ico  = document.getElementById('ico-dizionario');
+  if (!body) return;
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (ico) ico.setAttribute('name', open ? 'chevron-down-outline' : 'chevron-up-outline');
+  var header = body.previousElementSibling;
+  if (header) header.setAttribute('aria-expanded', String(!open));
+}
+function toggleRowStyle(id, checked) {
+  var tr = document.getElementById('diz-row-' + id);
+  if (!tr) return;
+  checked ? tr.classList.remove('text-muted') : tr.classList.add('text-muted');
+}
+
+function toggleRegoleAvanzate() {
+  var body = document.getElementById('regole-avanzate-body');
+  var ico  = document.getElementById('ico-regole-avanzate');
+  if (!body) return;
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  if (ico) ico.setAttribute('name', open ? 'chevron-down-outline' : 'chevron-up-outline');
+  var header = body.previousElementSibling;
+  if (header) header.setAttribute('aria-expanded', String(!open));
+}
+
+function toggleRegolaRowStyle(id, checked) {
+  var tr = document.getElementById('regola-row-' + id);
+  if (!tr) return;
+  checked ? tr.classList.remove('text-muted') : tr.classList.add('text-muted');
+}
+
+/* ── Ricerca dipendenti (live) ── */
+var dipSearch = document.getElementById('dip-search');
+if (dipSearch) {
+  dipSearch.addEventListener('input', function() {
+    var q = normalizeSearch(this.value);
+    var visible = 0;
+    document.querySelectorAll('.dip-item').forEach(function(div) {
+      var match = !q || normalizeSearch(div.textContent).includes(q);
+      div.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    var cnt = document.getElementById('dip-count');
+    if (cnt) cnt.textContent = visible;
+  });
+}
+function normalizeSearch(value) {
+  return (value || '').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+function selezionaTutti() {
+  document.querySelectorAll('.dip-item').forEach(function(div) {
+    if (div.style.display !== 'none') div.querySelector('.dip-check').checked = true;
+  });
+}
+function deselezionaTutti() {
+  document.querySelectorAll('.dip-check').forEach(function(cb) { cb.checked = false; });
+}
+
+/* ── Accordion risultati ── */
+function toggleAcc(id) {
+  var el = document.getElementById(id);
+  var ico = document.getElementById('ico-' + id);
+  if (!el) return;
+  var open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : '';
+  if (ico) ico.setAttribute('name', open ? 'chevron-down-outline' : 'chevron-up-outline');
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var bodies = document.querySelectorAll('.acc-body');
+  if (bodies.length > 0 && bodies.length <= 5) {
+    bodies.forEach(function(el) {
+      el.style.display = '';
+      var ico = document.getElementById('ico-' + el.id);
+      if (ico) ico.setAttribute('name', 'chevron-up-outline');
+    });
+  }
+});
+</script>
+
+{# ── Modal: Aggiungi voce al dizionario ── #}
+<div id="modal-aggiungi-diz"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+            z-index:1055; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:18px; width:100%; max-width:480px;
+              padding:1.5rem; box-shadow:0 8px 32px rgba(0,0,0,.25);">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="mb-0 fw-bold">{% trans "Aggiungi voce al dizionario" %}</h5>
+      <button type="button" class="btn-close"
+              onclick="document.getElementById('modal-aggiungi-diz').style.display='none';"></button>
+    </div>
+    <form method="post" action="{% url 'aggiungi-dizionario' %}">
+      {% csrf_token %}
+      <input type="hidden" name="mese" value="{{ mese|default:'' }}">
+      <input type="hidden" name="anno" value="{{ anno|default:'' }}">
+      <div class="mb-3">
+        <label class="oh-label" for="new-codice-tipo">{% trans "CODICE_TIPO_ORARIO" %} *</label>
+        <input type="text" id="new-codice-tipo" name="codice_tipo_orario"
+               class="oh-input w-100" required maxlength="100"
+               placeholder="es. FERIE, ROL, MALATTIA…">
+      </div>
+      <div class="mb-3">
+        <label class="oh-label" for="new-cod-voce">{% trans "cod_voce" %}</label>
+        <input type="text" id="new-cod-voce" name="cod_voce"
+               class="oh-input w-100" maxlength="4"
+               placeholder="es. 0300">
+        <small class="text-muted">{% trans "4 cifre con zero padding (lascia vuoto se non applicabile)" %}</small>
+      </div>
+      <div class="mb-3">
+        <label class="oh-label" for="new-tipo-ora">{% trans "Tipo Ora" %}</label>
+        <select id="new-tipo-ora" name="tipo_ora" class="oh-input w-100">
+          <option value="consuntivo">{% trans "Consuntivo" %}</option>
+          <option value="previsionale">{% trans "Previsionale" %}</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="oh-label" for="new-note">{% trans "Note" %}</label>
+        <input type="text" id="new-note" name="note"
+               class="oh-input w-100" maxlength="255">
+      </div>
+      <div class="mb-4 d-flex align-items-center gap-2">
+        <input type="checkbox" id="new-attivo" name="attivo" value="1"
+               class="form-check-input" style="width:1.1em;height:1.1em;">
+        <label for="new-attivo" class="mb-0">{% trans "Attivo" %}</label>
+      </div>
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="oh-btn oh-btn--light"
+                onclick="document.getElementById('modal-aggiungi-diz').style.display='none';">
+          {% trans "Annulla" %}
+        </button>
+        <button type="submit" class="oh-btn oh-btn--secondary">
+          <ion-icon name="save-outline" class="mr-1"></ion-icon>
+          {% trans "Salva" %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ── Modal: Aggiungi regola avanzata ── #}
+<div id="modal-aggiungi-regola"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+            z-index:1055; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:18px; width:100%; max-width:560px;
+              padding:1.5rem; box-shadow:0 8px 32px rgba(0,0,0,.25);">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="mb-0 fw-bold">{% trans "Aggiungi regola avanzata" %}</h5>
+      <button type="button" class="btn-close"
+              onclick="document.getElementById('modal-aggiungi-regola').style.display='none';"></button>
+    </div>
+    <form method="post" action="{% url 'aggiungi-regola-controllo' %}">
+      {% csrf_token %}
+      <input type="hidden" name="mese" value="{{ mese|default:'' }}">
+      <input type="hidden" name="anno" value="{{ anno|default:'' }}">
+
+      <div class="mb-3">
+        <label class="oh-label">{% trans "Direzione" %} *</label>
+        <select name="direzione" class="oh-input w-100" required>
+          <option value="APP_TO_CED">APP_TO_CED</option>
+          <option value="CED_TO_APP">CED_TO_APP</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="oh-label">{% trans "Sorgente" %} *</label>
+        <input type="text" name="sorgente_valore" class="oh-input w-100" maxlength="100" required
+               placeholder="Es: LAVORATO oppure 0300">
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="oh-label">{% trans "Modalita" %} *</label>
+          <select name="modalita" class="oh-input w-100" required>
+            <option value="ANY">ANY</option>
+            <option value="SUM">SUM</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="oh-label">{% trans "Priorita" %}</label>
+          <input type="number" name="priorita" class="oh-input w-100" value="100">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="oh-label">{% trans "Destinazioni" %}</label>
+        <input type="text" name="destinazioni" class="oh-input w-100" maxlength="255"
+               placeholder="Valori separati da virgola, es: 0300,0354 oppure LAVORATO,CORSO AI DIPENDENTI">
+      </div>
+
+      <div class="mb-3">
+        <label class="oh-label">{% trans "Note" %}</label>
+        <input type="text" name="note" class="oh-input w-100" maxlength="255">
+      </div>
+
+      <div class="mb-4 d-flex gap-3 align-items-center">
+        <label class="d-flex align-items-center gap-1 mb-0">
+          <input type="checkbox" name="no_somma_stesso_giorno" value="1" class="form-check-input">
+          <span>{% trans "No somma stesso giorno" %}</span>
+        </label>
+        <label class="d-flex align-items-center gap-1 mb-0">
+          <input type="checkbox" name="attiva" value="1" class="form-check-input" checked>
+          <span>{% trans "Attiva" %}</span>
+        </label>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="oh-btn oh-btn--light"
+                onclick="document.getElementById('modal-aggiungi-regola').style.display='none';">
+          {% trans "Annulla" %}
+        </button>
+        <button type="submit" class="oh-btn oh-btn--secondary">
+          <ion-icon name="save-outline" class="mr-1"></ion-icon>
+          {% trans "Salva Regola" %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+

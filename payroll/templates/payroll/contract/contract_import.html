@@ -1,0 +1,15 @@
+{% load i18n %}
+<div class="oh-modal__dialog-header">
+  <h2 class="oh-modal__dialog-title">{% trans "Import Contracts" %}</h2>
+  <button class="oh-modal__close" aria-label="Close"><ion-icon name="close-outline"></ion-icon></button>
+</div>
+<div class="oh-modal__dialog-body">
+  {% if error_message %}<div class="oh-alert oh-alert--danger">{{ error_message }}</div>{% endif %}
+  <form hx-post="{% url 'contract-import' %}" hx-target="#genericModalBody" hx-encoding="multipart/form-data">
+    {% csrf_token %}
+    <label class="oh-label" for="contract-import-file">{% trans "CSV or Excel file" %}</label>
+    <input class="oh-input w-100" id="contract-import-file" type="file" name="file" accept=".csv,.xls,.xlsx" required>
+    <a class="oh-btn oh-btn--light-bkg mt-3" href="{% url 'contract-import-file' %}"><ion-icon name="download-outline"></ion-icon>{% trans "Download template" %}</a>
+    <button class="oh-btn oh-btn--secondary float-end mt-3" type="submit">{% trans "Import" %}</button>
+  </form>
+</div>

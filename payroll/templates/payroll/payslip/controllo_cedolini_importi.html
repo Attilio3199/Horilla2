@@ -1,0 +1,243 @@
+{% extends 'index.html' %}{% block content %}{% load i18n %}{% load static %}
+
+<section class="oh-wrapper oh-main__topbar">
+  <div class="oh-main__titlebar oh-main__titlebar--left">
+    <h1 class="oh-main__titlebar-title fw-bold">{% trans "Controllo Voce 429 – Premi" %}</h1>
+  </div>
+  <div class="oh-main__titlebar-button-container">
+    <a href="{% url 'controllo-cedolini' %}" class="oh-btn oh-btn--light oh-btn--sm">
+      <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon>
+      {% trans "Torna al Controllo" %}
+    </a>
+  </div>
+</section>
+
+<div class="oh-wrapper mt-3">
+
+  {# ── Selettore periodo (GET) ── #}
+  <div class="oh-card mb-3">
+    <div class="oh-card__header">
+      <h5 class="mb-0 fw-bold">{% trans "Periodo di riferimento" %}</h5>
+    </div>
+    <div class="oh-card__body">
+      <form method="post" action="{% url 'controllo-cedolini-importi' %}" class="d-flex align-items-end gap-3 flex-wrap">
+        {% csrf_token %}
+        <div>
+          <label class="oh-label">{% trans "Mese / Anno" %}</label>
+          <select name="mese_anno" class="oh-input oh-input--sm" id="mese-anno-select" onchange="applyPeriodo(this)">
+            <option value="">— {% trans "seleziona" %} —</option>
+            {% for m, a in periodi %}
+            <option value="{{ m }}_{{ a }}"
+              {% if m == mese and a == anno %}selected{% endif %}>
+              {{ m|stringformat:"02d" }}/{{ a }}
+            </option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="mese" id="hidden-mese" value="{{ mese|default:'' }}">
+          <input type="hidden" name="anno" id="hidden-anno" value="{{ anno|default:'' }}">
+        </div>
+        <button type="submit" class="oh-btn oh-btn--secondary oh-btn--sm">
+          <ion-icon name="git-compare-outline" class="mr-1"></ion-icon>
+          {% trans "Avvia Controllo" %}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if risultati is not None %}
+  {# ── Riepilogo ── #}
+  <div class="d-flex gap-3 mb-3 flex-wrap align-items-center">
+    <span class="badge bg-info fs-6 px-3 py-2">
+      <strong>{{ n_totale }}</strong> {% trans "righe totali" %}
+    </span>
+    <span class="badge bg-success fs-6 px-3 py-2">
+      <strong>{{ n_ok }}</strong> {% trans "corrispondenti" %}
+    </span>
+    <span class="badge {% if n_diff %}bg-danger{% else %}bg-success{% endif %} fs-6 px-3 py-2">
+      <strong>{{ n_diff }}</strong> {% trans "con differenze" %}
+    </span>
+  </div>
+
+  {% if risultati %}
+  <div class="oh-card">
+    <div class="oh-card__body p-0">
+
+      {# ── Barra filtro ── #}
+      <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom flex-wrap">
+        <ion-icon name="search-outline" style="color:#6c757d;font-size:1.1rem;"></ion-icon>
+        <input
+          type="search"
+          id="imp-search"
+          class="oh-input oh-input--sm"
+          style="min-width:220px;max-width:380px;"
+          placeholder="{% trans 'Filtra per matricola, nominativo, NEG, stato…' %}"
+          autocomplete="off"
+        >
+        <span class="ms-auto text-muted small" id="imp-count">{{ n_totale }} {% trans "righe" %}</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="oh-table table table-sm table-bordered table-hover mb-0" id="imp-table">
+          <thead class="table-light">
+            <tr>
+              <th class="sortable" data-col="0" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Matricola" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable" data-col="1" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Nominativo" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable" data-col="2" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "NEG" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-end" data-col="3" data-type="num" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Importo Premi" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-end" data-col="4" data-type="num" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Importo Busta (voce 429)" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-end" data-col="5" data-type="num" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Differenza" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-center" data-col="6" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Stato" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="imp-tbody">
+            {% for r in risultati %}
+            <tr class="{% if r.stato == 'ok' %}table-success{% elif r.stato == 'solo_premi' %}table-warning{% elif r.stato == 'solo_busta' %}table-info{% else %}table-danger{% endif %}">
+              <td><code>{{ r.matricola }}</code></td>
+              <td>{{ r.nome|default:"—" }}</td>
+              <td>{{ r.neg|default:"—" }}</td>
+              <td class="text-end" data-val="{{ r.importo_imp|default:'' }}">
+                {% if r.importo_imp is not None %}{{ r.importo_imp|floatformat:2 }} €{% else %}—{% endif %}
+              </td>
+              <td class="text-end" data-val="{{ r.importo_corpo|default:'' }}">
+                {% if r.importo_corpo is not None %}{{ r.importo_corpo|floatformat:2 }} €{% else %}—{% endif %}
+              </td>
+              <td class="text-end" data-val="{{ r.delta|default:'' }}">
+                {% if r.delta is not None %}
+                  <strong class="{% if r.delta != 0 %}text-danger{% else %}text-success{% endif %}">
+                    {{ r.delta|floatformat:2 }} €
+                  </strong>
+                {% else %}—{% endif %}
+              </td>
+              <td class="text-center">
+                {% if r.stato == 'ok' %}
+                  <span class="badge bg-success">{% trans "OK" %}</span>
+                {% elif r.stato == 'solo_busta' %}
+                  <span class="badge bg-info text-dark">{% trans "Solo Busta" %}</span>
+                {% elif r.stato == 'busta_non_presente' %}
+                  <span class="badge bg-danger">{% trans "Busta non presente" %}</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">{% trans "Solo Premi" %}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="oh-card">
+    <div class="oh-card__body text-center py-4">
+      <ion-icon name="information-circle-outline" style="font-size:2.5rem;color:#6c757d;"></ion-icon>
+      <p class="mt-2 mb-0 text-muted">
+        {% trans "Nessun dato trovato per il periodo selezionato." %}
+      </p>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}{# end risultati #}
+
+</div>
+
+<script>
+function applyPeriodo(sel) {
+  var v = sel.value; if (!v) return;
+  var p = v.split('_');
+  document.getElementById('hidden-mese').value = p[0] || '';
+  document.getElementById('hidden-anno').value = p[1] || '';
+}
+
+/* ── Filtro live ── */
+var impSearch = document.getElementById('imp-search');
+var impCount  = document.getElementById('imp-count');
+
+function filterTable() {
+  var q  = impSearch ? impSearch.value.toLowerCase().trim() : '';
+  var tbody = document.getElementById('imp-tbody');
+  if (!tbody) return;
+  var rows = tbody.querySelectorAll('tr');
+  var visible = 0;
+  rows.forEach(function(tr) {
+    var text = tr.textContent.toLowerCase();
+    var show = !q || text.includes(q);
+    tr.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  if (impCount) impCount.textContent = visible + ' {% trans "righe" %}';
+}
+
+if (impSearch) impSearch.addEventListener('input', filterTable);
+
+/* ── Ordinamento colonne ── */
+var sortState = { col: -1, asc: true };
+
+function getCellVal(tr, col, isNum) {
+  var td = tr.querySelectorAll('td')[col];
+  if (!td) return isNum ? -Infinity : '';
+  // Per le colonne numeriche leggiamo data-val
+  if (isNum) {
+    var v = td.getAttribute('data-val');
+    var n = parseFloat(v);
+    return isNaN(n) ? -Infinity : n;
+  }
+  return td.textContent.trim().toLowerCase();
+}
+
+document.querySelectorAll('#imp-table .sortable').forEach(function(th) {
+  th.addEventListener('click', function() {
+    var col    = parseInt(th.getAttribute('data-col'));
+    var isNum  = th.getAttribute('data-type') === 'num';
+    var tbody  = document.getElementById('imp-tbody');
+    if (!tbody) return;
+
+    if (sortState.col === col) {
+      sortState.asc = !sortState.asc;
+    } else {
+      sortState.col = col;
+      sortState.asc = true;
+    }
+
+    // Aggiorna icone
+    document.querySelectorAll('#imp-table .sort-ico').forEach(function(ico) {
+      ico.setAttribute('name', 'swap-vertical-outline');
+      ico.style.opacity = '.5';
+    });
+    var ico = th.querySelector('.sort-ico');
+    if (ico) {
+      ico.setAttribute('name', sortState.asc ? 'arrow-up-outline' : 'arrow-down-outline');
+      ico.style.opacity = '1';
+    }
+
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort(function(a, b) {
+      var va = getCellVal(a, col, isNum);
+      var vb = getCellVal(b, col, isNum);
+      if (va < vb) return sortState.asc ? -1 : 1;
+      if (va > vb) return sortState.asc ?  1 : -1;
+      return 0;
+    });
+    rows.forEach(function(r) { tbody.appendChild(r); });
+
+    // Riapplica filtro dopo ordinamento
+    filterTable();
+  });
+});
+</script>
+{% endblock %}
+

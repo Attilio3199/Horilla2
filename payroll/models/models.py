@@ -12,6 +12,7 @@ from django import forms
 from django.apps import apps
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.http import QueryDict
 from django.urls import reverse, reverse_lazy
@@ -290,7 +291,23 @@ class Contract(HorillaModel):
         verbose_name=_("Deduction For One Leave Amount"),
     )
 
-    note = models.TextField(null=True, blank=True)
+    tipo_contratto = models.IntegerField(
+        choices=[
+            (1, _("Tirocinanti")), (2, _("Apprendistato")),
+            (3, _("Determinato")), (4, _("Indeterminato")),
+            (5, _("cocopro")), (6, _("GI GROUP")),
+            (7, _("infojobmetis")), (8, _("ranstad")), (9, _("voucher")),
+        ],
+        null=True, blank=True, verbose_name=_("Tipo Contratto"),
+    )
+    lun = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Lunedì"))
+    mar = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Martedì"))
+    mer = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Mercoledì"))
+    gio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Giovedì"))
+    ven = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Venerdì"))
+    sab = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Sabato"))
+    dom = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Domenica"))
+    note = models.TextField(null=True, blank=True, max_length=255)
     history = HorillaAuditLog(
         related_name="history_set",
         bases=[
@@ -2750,3 +2767,541 @@ class PayslipAutoGenerate(models.Model):
 
     def __str__(self) -> str:
         return f"{self.generate_day} | {self.company_id} "
+
+class PayslipPresenze(models.Model):
+    """
+    Tabella che contiene i dati importati dal libro presenze (cedolini).
+    """
+
+    dl = models.CharField(max_length=20, blank=True, null=True)
+    fil = models.CharField(max_length=20, blank=True, null=True)
+    cc = models.CharField(max_length=20, blank=True, null=True)
+    rag_soc = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Ragione Sociale"))
+    matricola = models.CharField(max_length=20, blank=True, null=True)
+    lavoratore = models.CharField(max_length=100, blank=True, null=True)
+    qp = models.CharField(max_length=10, blank=True, null=True)
+    data_ass = models.DateField(blank=True, null=True, verbose_name=_("Data Assunzione"))
+    livello = models.CharField(max_length=10, blank=True, null=True)
+    desc_liv = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("Descrizione Livello"))
+    pt = models.CharField(max_length=10, blank=True, null=True)
+    perc_pt = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name=_("% PT"))
+    perc_turn = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name=_("% Turn"))
+    mese = models.IntegerField(verbose_name=_("Mese"))
+    anno = models.IntegerField(verbose_name=_("Anno"))
+    matricola_mese_anno = models.CharField(
+        max_length=50, blank=True, null=True,
+        verbose_name=_("Matricola_Mese_Anno"),
+        help_text=_("Concatenazione di matricola_mese_anno")
+    )
+    cod_voce = models.IntegerField(blank=True, null=True, verbose_name=_("Codice Voce"))
+    desc_voce = models.CharField(max_length=100, blank=True, null=True, verbose_name=_("Descrizione Voce"))
+    aliq_voce = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name=_("Aliquota Voce"))
+    day_1 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_2 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_3 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_4 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_5 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_6 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_7 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_8 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_9 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_10 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_11 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_12 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_13 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_14 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_15 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_16 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_17 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_18 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_19 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_20 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_21 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_22 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_23 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_24 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_25 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_26 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_27 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_28 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_29 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_30 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    day_31 = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    ore_tot = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True, verbose_name=_("Ore Totali"))
+    gg_tot = models.DecimalField(max_digits=6, decimal_places=4, blank=True, null=True, verbose_name=_("Giorni Totali"))
+    periodo_elab = models.CharField(max_length=20, blank=True, null=True, verbose_name=_("Periodo Elaborazione"))
+    cod_dip = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("Codice Dipendente"))
+
+    objects = models.Manager()
+
+    class Meta:
+        db_table = "payslip_presenze"
+        verbose_name = _("Payslip Presenze")
+        verbose_name_plural = _("Payslip Presenze")
+
+    def __str__(self):
+        return f"{self.lavoratore} | {self.mese:02d}/{self.anno} | {self.cod_voce}"
+
+
+class PayslipDizionario(models.Model):
+    """
+    Dizionario di mappatura tra:
+      - orari.turni_creati.CODICE_TIPO_ORARIO
+      - horilla_main.payslip_presenze.cod_voce
+
+    Specifica inoltre se il confronto deve usare gli orari consuntivi
+    (Ora_Cons_Inizio / Ora_Cons_Fine) o preventivi (Ora_Prev_Inizio / Ora_Prev_Fine),
+    e se la verifica per quella voce è attiva.
+    """
+
+    ORA_CONS = "consuntivo"
+    ORA_PREV = "previsionale"
+    TIPO_ORA_CHOICES = [
+        (ORA_CONS, _("Consuntivo (Ora_Cons_Inizio / Ora_Cons_Fine)")),
+        (ORA_PREV, _("Previsionale (Ora_Prev_Inizio / Ora_Prev_Fine)")),
+    ]
+
+    codice_tipo_orario = models.CharField(
+        max_length=100,
+        verbose_name=_("CODICE_TIPO_ORARIO (turni_creati)"),
+        help_text=_("Valore del campo CODICE_TIPO_ORARIO in orari.turni_creati"),
+    )
+    cod_voce = models.CharField(
+        max_length=4,
+        blank=True,
+        null=True,
+        verbose_name=_("Codice Voce (payslip_presenze)"),
+        help_text=_("Valore del campo cod_voce in payslip_presenze da confrontare (4 cifre con zero padding, es. 0300)"),
+    )
+    tipo_ora = models.CharField(
+        max_length=20,
+        choices=TIPO_ORA_CHOICES,
+        default=ORA_CONS,
+        verbose_name=_("Tipo orario da usare"),
+        help_text=_("Indica se usare gli orari consuntivi o preventivi per il calcolo"),
+    )
+    attivo = models.BooleanField(
+        default=False,
+        verbose_name=_("Verifica attiva"),
+        help_text=_("Se disabilitato, questa voce viene ignorata nel controllo incrociato"),
+    )
+    note = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Note"),
+    )
+
+    objects = models.Manager()
+
+    class Meta:
+        db_table = "payslip_dizionario"
+        verbose_name = _("Dizionario Presenze ↔ Orari")
+        verbose_name_plural = _("Dizionario Presenze ↔ Orari")
+        ordering = ["codice_tipo_orario"]
+
+    def __str__(self):
+        stato = "✓" if self.attivo else "✗"
+        cod = self.cod_voce if self.cod_voce is not None else "—"
+        return f"[{stato}] {self.codice_tipo_orario} → cod_voce {cod} ({self.tipo_ora})"
+
+
+class PayslipControlloRegola(models.Model):
+    """
+    Regole avanzate di controllo usate solo per i casi non 1:1.
+
+    - APP_TO_CED: sorgente = CODICE_TIPO_ORARIO, destinazioni = cod_voce
+    - CED_TO_APP: sorgente = cod_voce, destinazioni = CODICE_TIPO_ORARIO
+    """
+
+    DIR_APP_TO_CED = "APP_TO_CED"
+    DIR_CED_TO_APP = "CED_TO_APP"
+    DIREZIONE_CHOICES = [
+        (DIR_APP_TO_CED, _("App (turni) -> Cedolino")),
+        (DIR_CED_TO_APP, _("Cedolino -> App (turni)")),
+    ]
+
+    MOD_ANY = "ANY"
+    MOD_SUM = "SUM"
+    MODALITA_CHOICES = [
+        (MOD_ANY, _("Any (almeno una destinazione)")),
+        (MOD_SUM, _("Somma (somma destinazioni)")),
+    ]
+
+    direzione = models.CharField(
+        max_length=20,
+        choices=DIREZIONE_CHOICES,
+        verbose_name=_("Direzione controllo"),
+    )
+    sorgente_valore = models.CharField(
+        max_length=100,
+        verbose_name=_("Sorgente"),
+        help_text=_("Valore sorgente: CODICE_TIPO_ORARIO (APP_TO_CED) oppure cod_voce (CED_TO_APP)."),
+    )
+    modalita = models.CharField(
+        max_length=10,
+        choices=MODALITA_CHOICES,
+        default=MOD_ANY,
+        verbose_name=_("Modalita"),
+    )
+    no_somma_stesso_giorno = models.BooleanField(
+        default=False,
+        verbose_name=_("No somma stesso giorno"),
+        help_text=_("Se attivo, nel controllo ANY non consente copertura tramite somma di piu destinazioni."),
+    )
+    attivo = models.BooleanField(default=True, verbose_name=_("Attiva"))
+    priorita = models.IntegerField(default=100, verbose_name=_("Priorita"))
+    note = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Note"))
+
+    objects = models.Manager()
+
+    class Meta:
+        db_table = "payslip_controllo_regole"
+        verbose_name = _("Regola controllo cedolini")
+        verbose_name_plural = _("Regole controllo cedolini")
+        ordering = ["direzione", "priorita", "sorgente_valore"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["direzione", "sorgente_valore"],
+                name="uniq_controllo_regola_direzione_sorgente",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.direzione} | {self.sorgente_valore} | {self.modalita}"
+
+
+class PayslipControlloRegolaDestinazione(models.Model):
+    """Destinazioni abilitate per una regola avanzata di controllo."""
+
+    regola = models.ForeignKey(
+        PayslipControlloRegola,
+        on_delete=models.CASCADE,
+        related_name="destinazioni",
+        verbose_name=_("Regola"),
+    )
+    destinazione_valore = models.CharField(max_length=100, verbose_name=_("Destinazione"))
+    attivo = models.BooleanField(default=True, verbose_name=_("Attiva"))
+    note = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Note"))
+
+    objects = models.Manager()
+
+    class Meta:
+        db_table = "payslip_controllo_regole_destinazioni"
+        verbose_name = _("Destinazione regola controllo")
+        verbose_name_plural = _("Destinazioni regole controllo")
+        ordering = ["regola_id", "destinazione_valore"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["regola", "destinazione_valore"],
+                name="uniq_controllo_regola_destinazione",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.regola_id} -> {self.destinazione_valore}"
+
+class PayslipCorpo(models.Model):
+    """
+    Corpo della busta paga importato da CSV.
+    Ogni riga rappresenta una voce (cod_voce) di una busta paga.
+    """
+
+    mese = models.IntegerField(verbose_name=_("Mese"))
+    anno = models.IntegerField(verbose_name=_("Anno"))
+
+    codice_dl = models.CharField(max_length=20, verbose_name=_("Codice DL"))
+    denominazione = models.CharField(max_length=100, verbose_name=_("Denominazione"))
+    filiale = models.CharField(max_length=20, blank=True, null=True, verbose_name=_("Filiale"))
+    c_costo = models.IntegerField(blank=True, null=True, verbose_name=_("C.Costo"))
+    reparto = models.IntegerField(blank=True, null=True, verbose_name=_("Reparto"))
+    matricola = models.CharField(max_length=20, verbose_name=_("Matricola"))
+    cognome = models.CharField(max_length=100, verbose_name=_("Cognome"))
+    nome = models.CharField(max_length=100, verbose_name=_("Nome"))
+    qp = models.CharField(max_length=10, blank=True, null=True, verbose_name=_("QP"))
+
+    assunzione = models.DateField(blank=True, null=True, verbose_name=_("Data assunzione"))
+    anzianita = models.DateField(blank=True, null=True, verbose_name=_("Data anzianità"))
+    cod_pos = models.IntegerField(blank=True, null=True, verbose_name=_("Cod. posizione"))
+    data_pos = models.DateField(blank=True, null=True, verbose_name=_("Data posizione"))
+    liq = models.CharField(max_length=20, blank=True, null=True, verbose_name=_("Liquidazione"))
+
+    cod_voce = models.IntegerField(verbose_name=_("Cod. voce"))
+    descrizione_voce = models.CharField(max_length=100, verbose_name=_("Descrizione voce"))
+
+    aliq_perc_lav = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name=_("Aliq./%lav."))
+    unita = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name=_("h/g/n /%d.l."))
+    dato_base_imponibile = models.DecimalField(max_digits=15, decimal_places=4, blank=True, null=True, verbose_name=_("Dato base/imponibile"))
+    importo_ctr_lav = models.DecimalField(max_digits=15, decimal_places=4, blank=True, null=True, verbose_name=_("Importo/ctr lav"))
+    db_tfr = models.DecimalField(max_digits=15, decimal_places=4, blank=True, null=True, verbose_name=_("D.B. TFR"))
+    imp_tfr_ctr_dl = models.DecimalField(max_digits=15, decimal_places=4, blank=True, null=True, verbose_name=_("Imp. TFR/ctr.dl"))
+
+    payslip = models.ForeignKey(
+        "Payslip",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="corpo_rows",
+        verbose_name=_("Busta paga"),
+    )
+
+    objects = models.Manager()
+
+    class Meta:
+        db_table = "payslip_corpo"
+        verbose_name = _("Corpo busta paga")
+        verbose_name_plural = _("Corpo buste paga")
+        ordering = ["anno", "mese", "matricola", "cod_voce"]
+
+    def __str__(self):
+        return f"{self.matricola} {self.cognome} {self.nome} – {self.mese}/{self.anno} – voce {self.cod_voce}"
+
+
+class PayslipImporti(models.Model):
+    """
+    Premi importati da file Excel (una riga per dipendente per mese/anno).
+    """
+
+    mese = models.IntegerField(verbose_name=_("Mese"))
+    anno = models.IntegerField(verbose_name=_("Anno"))
+    neg = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("NEG"))
+    badge_id = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("Badge ID"))
+    matricola = models.CharField(max_length=20, blank=True, null=True, verbose_name=_("Matricola"))
+    importo = models.DecimalField(
+        max_digits=15, decimal_places=4, blank=True, null=True, verbose_name=_("Importo")
+    )
+
+    objects = models.Manager()
+
+    class Meta:
+        db_table = "payslip_importi"
+        verbose_name = _("Premio importato")
+        verbose_name_plural = _("Premi importati")
+        ordering = ["anno", "mese", "badge_id"]
+
+    def __str__(self):
+        return f"{self.badge_id} | {self.mese:02d}/{self.anno} | {self.importo}"
+
+class VarzioneOraria(HorillaModel):
+    """
+    VarzioneOraria - Storico delle variazioni orarie dei contratti.
+    Snapshot del contratto PRIMA di una variazione oraria.
+    """
+
+    WAGE_CHOICES = [
+        ("daily", _("Daily")),
+        ("monthly", _("Monthly")),
+        ("hourly", _("Hourly")),
+    ]
+    PAY_FREQUENCY_CHOICES = (
+        ("weekly", _("Weekly")),
+        ("monthly", _("Monthly")),
+        ("semi_monthly", _("Semi-Monthly")),
+    )
+    CONTRACT_STATUS_CHOICES = (
+        ("draft", _("Draft")),
+        ("active", _("Active")),
+        ("expired", _("Expired")),
+        ("terminated", _("Terminated")),
+    )
+    TIPO_CONTRATTO_CHOICES = (
+        (1, _("Tirocinanti")),
+        (2, _("Apprendistato")),
+        (3, _("Determinato")),
+        (4, _("Indeterminato")),
+        (5, _("cocopro")),
+        (6, _("GI GROUP")),
+        (7, _("infojobmetis")),
+        (8, _("ranstad")),
+        (9, _("voucher")),
+    )
+
+    contract = models.ForeignKey(
+        Contract,
+        on_delete=models.CASCADE,
+        related_name="variazioni_orarie",
+        verbose_name=_("Contratto"),
+    )
+    employee_id = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="variazioni_orarie",
+        verbose_name=_("Dipendente"),
+    )
+    # Snapshot di tutti i campi del contratto al momento della variazione
+    contract_name = models.CharField(
+        max_length=250, blank=True, verbose_name=_("Contract")
+    )
+    contract_start_date = models.DateField(verbose_name=_("Data Inizio"))
+    contract_end_date = models.DateField(
+        null=True, blank=True, verbose_name=_("Data Fine")
+    )
+    wage_type = models.CharField(
+        choices=WAGE_CHOICES,
+        max_length=250,
+        default="monthly",
+        verbose_name=_("Wage Type"),
+    )
+    pay_frequency = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        choices=PAY_FREQUENCY_CHOICES,
+        default="monthly",
+        verbose_name=_("Pay Frequency"),
+    )
+    wage = models.FloatField(verbose_name=_("Basic Salary"), null=True, default=0)
+    filing_status = models.ForeignKey(
+        FilingStatus,
+        on_delete=models.SET_NULL,
+        related_name="variazioni_orarie",
+        null=True,
+        blank=True,
+        verbose_name=_("Filing Status"),
+    )
+    contract_status = models.CharField(
+        choices=CONTRACT_STATUS_CHOICES,
+        max_length=250,
+        default="draft",
+        verbose_name=_("Status"),
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="variazioni_orarie",
+        verbose_name=_("Department"),
+    )
+    job_position = models.ForeignKey(
+        JobPosition,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="variazioni_orarie",
+        verbose_name=_("Job Position"),
+    )
+    job_role = models.ForeignKey(
+        JobRole,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="variazioni_orarie",
+        verbose_name=_("Job Role"),
+    )
+    shift = models.ForeignKey(
+        EmployeeShift,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="variazioni_orarie",
+        verbose_name=_("Shift"),
+    )
+    work_type = models.ForeignKey(
+        WorkType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="variazioni_orarie",
+        verbose_name=_("Work Type"),
+    )
+    notice_period_in_days = models.IntegerField(
+        default=30,
+        validators=[min_zero],
+        verbose_name=_("Notice Period"),
+    )
+    deduct_leave_from_basic_pay = models.BooleanField(
+        default=True,
+        verbose_name=_("Deduct From Basic Pay"),
+    )
+    calculate_daily_leave_amount = models.BooleanField(
+        default=True,
+        verbose_name=_("Calculate Daily Leave Amount"),
+    )
+    deduction_for_one_leave_amount = models.FloatField(
+        null=True, blank=True, default=0, verbose_name=_("Deduction For One Leave Amount")
+    )
+    tipo_contratto = models.IntegerField(
+        choices=TIPO_CONTRATTO_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name=_("Tipo Contratto"),
+    )
+    lun = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Lunedì")
+    )
+    mar = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Martedì")
+    )
+    mer = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Mercoledì")
+    )
+    gio = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Giovedì")
+    )
+    ven = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Venerdì")
+    )
+    sab = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Sabato")
+    )
+    dom = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True, default=0, verbose_name=_("Domenica")
+    )
+    attachment = models.FileField(
+        upload_to="payroll/variazioni_orarie/",
+        null=True,
+        blank=True,
+        verbose_name=_("Allegato"),
+    )
+    note = models.TextField(null=True, blank=True, max_length=255)
+
+    objects = HorillaCompanyManager("employee_id__employee_work_info__company_id")
+
+    def __str__(self):
+        return (
+            f"Variazione {self.contract.contract_name} - "
+            f"{self.contract_start_date} / {self.contract_end_date}"
+        )
+
+    class Meta:
+        db_table = "payroll_variazioneoraria"
+        ordering = ["-contract_start_date"]
+        verbose_name = _("Variazione Oraria")
+        verbose_name_plural = _("Variazioni Orarie")
+
+
+class ContractLevel(HorillaModel):
+    employee_id = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="contract_levels",
+        verbose_name=_("Employee"),
+    )
+    badge_id = models.CharField(max_length=50, verbose_name=_("Badge ID"))
+    lvl = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        verbose_name=_("Livello"),
+    )
+    data_decorrenza = models.DateField(verbose_name=_("Data decorrenza"))
+    note = models.TextField(
+        null=True,
+        blank=True,
+        max_length=255,
+        verbose_name=_("Note"),
+    )
+
+    objects = HorillaCompanyManager("employee_id__employee_work_info__company_id")
+
+    def save(self, *args, **kwargs):
+        self.badge_id = self.employee_id.badge_id or ""
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.badge_id} - L{self.lvl} - {self.data_decorrenza}"
+
+    class Meta:
+        db_table = "payroll_contract_lvl"
+        ordering = ["-data_decorrenza", "-id"]
+        verbose_name = _("Livello Contratto")
+        verbose_name_plural = _("Livelli Contratto")

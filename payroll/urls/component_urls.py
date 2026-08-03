@@ -377,4 +377,144 @@ urlpatterns = [
         reimbursements.ReimbursementsFormView.as_view(),
         name="reimbursement-update",
     ),
+path(
+        "import-payslip-presenze/",
+        component_views.import_payslip_presenze,
+        name="import-payslip-presenze",
+    ),
+path(
+        "delete-payslip-presenze/",
+        component_views.delete_payslip_presenze,
+        name="delete-payslip-presenze",
+    ),
+path(
+        "import-payslip-corpo/",
+        component_views.import_payslip_corpo,
+        name="import-payslip-corpo",
+    ),
+path(
+        "delete-payslip-corpo/",
+        component_views.delete_payslip_corpo,
+        name="delete-payslip-corpo",
+    ),
+path(
+        "import-payslip-importi/",
+        component_views.import_payslip_importi,
+        name="import-payslip-importi",
+    ),
+path(
+        "delete-payslip-importi/",
+        component_views.delete_payslip_importi,
+        name="delete-payslip-importi",
+    ),
+path(
+        "presenze-by-lavoratore/",
+        component_views.presenze_by_lavoratore,
+        name="presenze-by-lavoratore",
+    ),
+path(
+        "presenze-lavoratore-rows/",
+        component_views.presenze_lavoratore_rows,
+        name="presenze-lavoratore-rows",
+    ),
+path(
+        "controllo-cedolini/",
+        component_views.controllo_cedolini,
+        name="controllo-cedolini",
+    ),
+path(
+        "controllo-cedolini/presenze/",
+        component_views.controllo_cedolini_presenze,
+        name="controllo-cedolini-presenze",
+    ),
+path(
+        "controllo-cedolini/importi/",
+        component_views.controllo_cedolini_importi,
+        name="controllo-cedolini-importi",
+    ),
+path(
+        "controllo-cedolini/acconti/",
+        component_views.controllo_cedolini_acconti,
+        name="controllo-cedolini-acconti",
+    ),
+path(
+        "controllo-cedolini/malattie/",
+        component_views.controllo_cedolini_malattie,
+        name="controllo-cedolini-malattie",
+    ),
+path(
+        "export-malattie-excel/",
+        component_views.export_malattie_excel,
+        name="export-malattie-excel",
+    ),
+path(
+        "export-malattie-docx/",
+        component_views.export_malattie_docx,
+        name="export-malattie-docx",
+    ),
+path(
+        "export-acconti-excel/",
+        component_views.export_acconti_excel,
+        name="export-acconti-excel",
+    ),
+path(
+        "export-acconti-docx/",
+        component_views.export_acconti_docx,
+        name="export-acconti-docx",
+    ),
+path(
+        "toggle-dizionario-attivo/<int:mapping_id>/",
+        component_views.toggle_dizionario_attivo,
+        name="toggle-dizionario-attivo",
+    ),
+path(
+        "aggiungi-dizionario/",
+        component_views.aggiungi_dizionario,
+        name="aggiungi-dizionario",
+    ),
+path(
+        "elimina-dizionario/<int:mapping_id>/",
+        component_views.elimina_dizionario,
+        name="elimina-dizionario",
+    ),
+path(
+        "toggle-regola-controllo-attiva/<int:regola_id>/",
+        component_views.toggle_regola_controllo_attiva,
+        name="toggle-regola-controllo-attiva",
+    ),
+path(
+        "aggiungi-regola-controllo/",
+        component_views.aggiungi_regola_controllo,
+        name="aggiungi-regola-controllo",
+    ),
+path(
+        "elimina-regola-controllo/<int:regola_id>/",
+        component_views.elimina_regola_controllo,
+        name="elimina-regola-controllo",
+    ),
+path(
+        "toggle-regola-destinazione-attiva/<int:destinazione_id>/",
+        component_views.toggle_regola_destinazione_attiva,
+        name="toggle-regola-destinazione-attiva",
+    ),
+path(
+        "aggiungi-regola-destinazione/<int:regola_id>/",
+        component_views.aggiungi_regola_destinazione,
+        name="aggiungi-regola-destinazione",
+    ),
+path(
+        "elimina-regola-destinazione/<int:destinazione_id>/",
+        component_views.elimina_regola_destinazione,
+        name="elimina-regola-destinazione",
+    ),
+path(
+        "export-controllo-excel/",
+        component_views.export_controllo_excel,
+        name="export-controllo-excel",
+    ),
+path(
+        "export-controllo-docx/",
+        component_views.export_controllo_docx,
+        name="export-controllo-docx",
+    ),
 ]

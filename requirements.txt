@@ -52,6 +52,7 @@ pypdf
 pypng
 python-bidi
 python-dateutil
+python-docx
 pytz
 PyYAML
 pyzk==0.9

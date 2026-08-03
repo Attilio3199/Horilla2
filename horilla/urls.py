@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.core.cache import cache
 from django.db import connection
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.urls import include, path, re_path
 from django.views.i18n import JavaScriptCatalog
 
@@ -61,7 +61,22 @@ def readiness_check(request):
     return JsonResponse({"status": "ok", **checks}, status=200)
 
 
+def service_worker(request):
+    """Serve the PWA worker from the site root so it controls all routes."""
+    worker_path = settings.BASE_DIR / "static" / "sw.js"
+    try:
+        content = worker_path.read_text(encoding="utf-8")
+    except OSError:
+        return HttpResponse(status=404)
+
+    response = HttpResponse(content, content_type="application/javascript")
+    response["Service-Worker-Allowed"] = "/"
+    response["Cache-Control"] = "no-cache"
+    return response
+
+
 urlpatterns = [
+    path("sw.js", service_worker, name="service-worker"),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", include("django.contrib.auth.urls")),

@@ -20,7 +20,7 @@ env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(str, "django-insecure-default-key"),
     ALLOWED_HOSTS=(list, ["*"]),
-    CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:8000"]),
+    CSRF_TRUSTED_ORIGINS=(list, ["http://localhost:8002"]),
     SECURE_SSL_REDIRECT=(bool, False),
 )
 
@@ -488,6 +488,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = True
+
+# Horilla and Horilla2 can be served from the same host on different ports.
+# Browser cookies are scoped by host, not port, so distinct names prevent
+# login/CSRF cookies from one instance invalidating the other.
+SESSION_COOKIE_NAME = env("SESSION_COOKIE_NAME", default="horilla2_sessionid")
+CSRF_COOKIE_NAME = env("CSRF_COOKIE_NAME", default="horilla2_csrftoken")
 
 # ========================================
 # PRODUCTION SECURITY GATES

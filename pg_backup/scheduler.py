@@ -97,7 +97,7 @@ else:
     DB_USER = db["USER"]
     DB_PASSWORD = db["PASSWORD"]
     DB_HOST = db.get("HOST", "localhost")
-    DB_PORT = str(db.get("PORT", 5432))
+    DB_PORT = str(db.get("PORT", 5433))
 
     def backup_postgres():
         """

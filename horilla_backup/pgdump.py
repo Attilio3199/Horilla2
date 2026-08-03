@@ -3,7 +3,7 @@ import subprocess
 
 
 def dump_postgres_db(
-    db_name, username, output_file, password=None, host="localhost", port=5432
+    db_name, username, output_file, password=None, host="localhost", port=5433
 ):
     # Set environment variable for the password if provided
     if password:

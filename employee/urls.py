@@ -369,6 +369,11 @@ urlpatterns = [
         kwargs={"model": Employee},
     ),
     path("document-tab/<int:pk>/", views.document_tab, name="document-tab"),
+    path("document-category-tab/<int:pk>/<int:category_id>/", views.document_category_tab, name="document-category-tab"),
+    path("get-document-subcategories/", views.get_document_subcategories, name="get-document-subcategories"),
+    path("maternita-form/<int:pk>/", views.maternita_form, name="maternita-form"),
+    path("maternita-form/<int:pk>/<int:maternita_id>/", views.maternita_form, name="maternita-edit"),
+    path("maternita-delete/<int:pk>/", views.maternita_delete, name="maternita-delete"),
     path("bonus-points-tab/<int:pk>/", views.bonus_points_tab, name="bonus-points-tab"),
     path(
         "add-bonus-points/<int:emp_id>/",

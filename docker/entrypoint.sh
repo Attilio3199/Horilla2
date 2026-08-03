@@ -4,7 +4,7 @@ set -e
 echo "Starting Horilla HR..."
 
 DB_HOST="${DB_HOST:-db}"
-DB_PORT="${DB_PORT:-5432}"
+DB_PORT="${DB_PORT:-5433}"
 
 # Wait for PostgreSQL to be ready (with timeout)
 echo "Waiting for PostgreSQL at ${DB_HOST}:${DB_PORT}..."

@@ -1,0 +1,18 @@
+{% extends 'index.html' %}
+{% load i18n %}
+{% block content %}
+<div class="oh-wrapper"><div class="oh-container"><div class="oh-card oh-card--margin mt-4">
+  <div class="oh-card__header"><h2 class="oh-card__title">{% trans "Importa Turni da MariaDB" %}</h2></div>
+  <div class="oh-card__body mt-3">
+    {% if error %}<div class="oh-alert oh-alert--danger mb-3">{{ error }}</div>{% endif %}
+    {% if success %}<div class="oh-alert oh-alert--success mb-3">{% blocktrans with n=rows_imported src=source_table %}Importazione completata: {{ n }} statement INSERT eseguiti dalla tabella {{ src }} in _turni_creati.{% endblocktrans %}</div>{% endif %}
+    <p class="text-muted">{% trans "Carica il dump .sql di MariaDB. La tabella _turni_creati verrà ricreata su PostgreSQL." %}</p>
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+      <label class="oh-label" for="dump_file">{% trans "File dump MariaDB (.sql)" %}</label>
+      <input class="oh-input" type="file" id="dump_file" name="dump_file" accept=".sql" required>
+      <p class="text-muted"><small>{% trans "L'importazione sostituisce completamente la tabella esistente." %}</small></p>
+      <button type="submit" class="oh-btn oh-btn--primary">{% trans "Importa" %}</button>
+    </form>
+  </div>
+</div></div></div>
+{% endblock %}

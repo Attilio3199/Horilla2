@@ -5,7 +5,9 @@ This module is used to write dashboard related views
 """
 
 import datetime
+from collections import defaultdict
 
+from django.apps import apps
 from django.core import serializers
 from django.db.models import Q
 from django.http import JsonResponse
@@ -44,15 +46,11 @@ def dashboard(request):
         dep_vacancy = 1
     else:
         dep_vacancy = 0
-    employee_info = EmployeeWorkInformation.objects.all()
-    joining_list = []
-    for rec in employee_info:
-        if rec.date_joining != None:
-            joining_list.append("OK")
-    if joining_list != []:
-        joining = 1
+    if apps.is_installed("payroll"):
+        Contract = apps.get_model("payroll", "Contract")
+        joining = int(Contract.objects.exclude(contract_status="draft").exists())
     else:
-        joining = 0
+        joining = int(EmployeeWorkInformation.objects.exclude(date_joining__isnull=True).exists())
 
     jobs = JobPosition.objects.all()
     all_job = []
@@ -219,19 +217,32 @@ def dashboard_hiring(request):
     This method is used generate hired candidate count per month for the dashboard
     """
 
-    selected_year = int(request.GET.get("id") or datetime.date.today().year)
+    try:
+        selected_year = int(request.GET.get("id") or datetime.date.today().year)
+    except (TypeError, ValueError):
+        selected_year = datetime.date.today().year
 
-    hired_candidates = Candidate.objects.filter(
-        hired=True,
-        joining_date__year=selected_year,
-        joining_date__isnull=False,
-    )
-
-    candidate_count_per_month = [0] * 12
-
-    for candidate in hired_candidates:
-        month_index = candidate.joining_date.month - 1
-        candidate_count_per_month[month_index] += 1
+    new_hires, renewals, terminations = [0] * 12, [0] * 12, [0] * 12
+    if apps.is_installed("payroll"):
+        Contract = apps.get_model("payroll", "Contract")
+        by_employee = defaultdict(list)
+        for contract in Contract.objects.exclude(contract_status="draft").order_by("employee_id_id", "contract_start_date"):
+            by_employee[contract.employee_id_id].append(contract)
+        for contracts in by_employee.values():
+            for index, contract in enumerate(contracts):
+                if contract.contract_start_date and contract.contract_start_date.year == selected_year:
+                    (new_hires if index == 0 else renewals)[contract.contract_start_date.month - 1] += 1
+                if contract.contract_end_date and contract.contract_end_date.year == selected_year:
+                    followed = any(
+                        item.contract_start_date <= contract.contract_end_date + datetime.timedelta(days=1)
+                        and (item.contract_end_date is None or item.contract_end_date >= contract.contract_end_date + datetime.timedelta(days=1))
+                        for item in contracts if item.id != contract.id
+                    )
+                    if not followed:
+                        terminations[contract.contract_end_date.month - 1] += 1
+    else:
+        for info in EmployeeWorkInformation.objects.filter(date_joining__year=selected_year):
+            new_hires[info.date_joining.month - 1] += 1
 
     labels = [
         _("January"),
@@ -250,10 +261,10 @@ def dashboard_hiring(request):
 
     data_set = [
         {
-            "label": _("Hired in %(year)s") % {"year": selected_year},
-            "data": candidate_count_per_month,
-            "backgroundColor": "rgba(236, 131, 25)",
-        }
+            "label": _("New hires in %(year)s") % {"year": selected_year}, "data": new_hires,
+        },
+        {"label": _("Renewals in %(year)s") % {"year": selected_year}, "data": renewals},
+        {"label": _("Terminations in %(year)s") % {"year": selected_year}, "data": terminations},
     ]
 
     return JsonResponse({"dataSet": data_set, "labels": labels})

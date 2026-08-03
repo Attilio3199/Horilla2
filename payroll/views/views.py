@@ -5,6 +5,7 @@ This module is used to define the method for the path in the urls
 """
 
 import json
+import re
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from itertools import groupby
@@ -14,11 +15,13 @@ import pandas as pd
 import pdfkit
 from django.conf import settings as pay_settings
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.db.models import ProtectedError, Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_http_methods
@@ -53,6 +56,7 @@ from payroll.forms.component_forms import (
 from payroll.methods.methods import paginator_qry, save_payslip
 from payroll.models.models import (
     Contract,
+    ContractLevel,
     FilingStatus,
     PayrollGeneralSetting,
     Payslip,
@@ -60,6 +64,7 @@ from payroll.models.models import (
     Reimbursement,
     ReimbursementFile,
     ReimbursementrequestComment,
+    VarzioneOraria,
 )
 from payroll.models.tax_models import PayrollSettings
 
@@ -156,6 +161,246 @@ def contract_update(request, contract_id, **kwargs):
             "back_url": reverse("contract-filter"),
         },
     )
+
+
+@login_required
+@permission_required("payroll.change_contract")
+def variazione_oraria_create(request, employee_id):
+    """Store the previous weekly schedule and apply a dated contract change."""
+    from payroll.forms.forms import VarzioneOrariaForm
+
+    employee = get_object_or_404(Employee, id=employee_id)
+    contracts = Contract.objects.filter(employee_id=employee).order_by("-contract_start_date")
+    variation_id = request.POST.get("variazione_id") or request.GET.get("variazione_id")
+    editing_variation = (
+        get_object_or_404(VarzioneOraria, id=variation_id, employee_id=employee)
+        if variation_id else None
+    )
+    selected_id = request.POST.get("contratto_selezionato") or request.GET.get("contract_id")
+    selected_contract = (
+        editing_variation.contract if editing_variation else get_object_or_404(contracts, id=selected_id)
+        if selected_id else contracts.filter(contract_status="active").first() or contracts.first()
+    )
+    if selected_contract is None:
+        messages.error(request, _("Create a contract before adding an hourly variation."))
+        return redirect("employee-view-individual", obj_id=employee.id)
+
+    next_url = request.POST.get("next") or request.GET.get("next")
+    initial = {}
+    if editing_variation:
+        initial = {
+            "contratto_selezionato": editing_variation.contract_id,
+            "contract_name": editing_variation.contract_name,
+            "contract_start_date": editing_variation.contract_start_date,
+            "contract_end_date": editing_variation.contract_end_date,
+            "tipo_contratto": editing_variation.tipo_contratto,
+            **{day: getattr(editing_variation, day) for day in ("lun", "mar", "mer", "gio", "ven", "sab", "dom")},
+        }
+    form = VarzioneOrariaForm(
+        request.POST or None, request.FILES or None,
+        instance=selected_contract, contracts=contracts, initial=initial,
+    )
+    form.initial.setdefault("contratto_selezionato", selected_contract.id)
+    if request.method == "POST" and form.is_valid():
+        if editing_variation:
+            editing_variation.contract = selected_contract
+            editing_variation.contract_name = form.cleaned_data["contract_name"]
+            editing_variation.contract_start_date = form.cleaned_data["contract_start_date"]
+            editing_variation.contract_end_date = form.cleaned_data["contract_end_date"]
+            editing_variation.tipo_contratto = form.cleaned_data["tipo_contratto"]
+            for day in ("lun", "mar", "mer", "gio", "ven", "sab", "dom"):
+                setattr(editing_variation, day, form.cleaned_data[day])
+            if attachment := form.cleaned_data.get("attachment"):
+                editing_variation.attachment = attachment
+            editing_variation.save()
+            messages.success(request, _("Variazione oraria updated."))
+            if next_url:
+                return redirect(next_url)
+            return redirect("employee-view-individual", obj_id=employee.id)
+        change_date = form.cleaned_data["contract_start_date"]
+        if change_date <= selected_contract.contract_start_date:
+            form.add_error("contract_start_date", _("The variation date must be after the contract start date."))
+        else:
+            previous_end = change_date - timedelta(days=1)
+            snapshot_fields = [
+                "contract_name", "contract_start_date", "wage_type", "pay_frequency",
+                "wage", "filing_status", "contract_status", "department", "job_position",
+                "job_role", "shift", "work_type", "notice_period_in_days",
+                "deduct_leave_from_basic_pay", "calculate_daily_leave_amount",
+                "deduction_for_one_leave_amount", "tipo_contratto", "lun", "mar", "mer",
+                "gio", "ven", "sab", "dom", "note",
+            ]
+            snapshot = {field: getattr(selected_contract, field) for field in snapshot_fields}
+            snapshot.update({
+                "contract": selected_contract,
+                "employee_id": employee,
+                "contract_end_date": previous_end,
+                "attachment": form.cleaned_data.get("attachment"),
+            })
+            VarzioneOraria.objects.create(**snapshot)
+            for day in ("lun", "mar", "mer", "gio", "ven", "sab", "dom"):
+                setattr(selected_contract, day, form.cleaned_data[day])
+            selected_contract.contract_end_date = form.cleaned_data.get("contract_end_date")
+            selected_contract.save(update_fields=["lun", "mar", "mer", "gio", "ven", "sab", "dom", "contract_end_date"])
+            messages.success(request, _("Variazione oraria saved."))
+            if next_url:
+                return redirect(next_url)
+            return redirect("employee-view-individual", obj_id=employee.id)
+
+    return render(request, "payroll/common/form.html", {
+        "form": form, "post_url": request.get_full_path(), "next_url": next_url,
+        "back_url": reverse("employee-view-individual", args=[employee.id]),
+        "editing_variation": editing_variation,
+    })
+
+
+@login_required
+@permission_required("payroll.change_contract")
+def variazione_oraria_delete(request, variazione_id):
+    if request.method != "POST":
+        return redirect("employee-view")
+    variation = get_object_or_404(VarzioneOraria, id=variazione_id)
+    employee_id = variation.employee_id_id
+    variation.delete()
+    messages.success(request, _("Variazione oraria deleted."))
+    if next_url := request.POST.get("next"):
+        return redirect(next_url)
+    return redirect("employee-view-individual", obj_id=employee_id)
+
+
+@login_required
+@permission_required("payroll.change_contract")
+@require_http_methods(["GET", "POST"])
+def contract_level_create(request, employee_id):
+    """Create or edit a dated contract-level entry for an employee."""
+    from payroll.forms.forms import ContractLevelForm
+
+    employee = get_object_or_404(Employee, id=employee_id)
+    next_url = request.GET.get("next") or request.POST.get("next")
+    if next_url and not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}
+    ):
+        next_url = None
+
+    level_id = request.GET.get("level_id") or request.POST.get("level_id")
+    level = (
+        get_object_or_404(ContractLevel, id=level_id, employee_id=employee)
+        if level_id
+        else None
+    )
+    form = ContractLevelForm(
+        request.POST or None,
+        instance=level,
+        initial={"employee_id": employee.id},
+    )
+    if request.method == "POST" and form.is_valid():
+        contract_level = form.save(commit=False)
+        contract_level.employee_id = employee
+        contract_level.save()
+        messages.success(
+            request,
+            _("Livello aggiornato con successo.") if level else _("Livello salvato con successo."),
+        )
+        if next_url:
+            return redirect(next_url)
+        return redirect("employee-view-individual", obj_id=employee.id)
+
+    return render(request, "payroll/common/form.html", {"form": form, "next_url": next_url})
+
+
+@login_required
+@permission_required("payroll.change_contract")
+@require_http_methods(["POST"])
+def contract_level_delete(request, level_id):
+    level = get_object_or_404(ContractLevel, id=level_id)
+    employee_id = level.employee_id_id
+    next_url = request.POST.get("next")
+    if next_url and not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}
+    ):
+        next_url = None
+    level.delete()
+    messages.success(request, _("Livello eliminato con successo."))
+    return redirect(next_url) if next_url else redirect("employee-view-individual", obj_id=employee_id)
+
+
+@login_required
+@permission_required("payroll.add_contract")
+def contract_import_file(request):
+    columns = [
+        "Badge ID", "Contract Status", "Tipo Contratto", "Contract Start Date",
+        "Contract End Date", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom",
+    ]
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = 'attachment; filename="contract_import_template.xlsx"'
+    pd.DataFrame(columns=columns).to_excel(response, index=False)
+    return response
+
+
+@login_required
+@permission_required("payroll.add_contract")
+def contract_import(request):
+    """Create or update contracts using Badge ID and start/end dates as row key."""
+    if request.method == "GET":
+        return render(request, "payroll/contract/contract_import.html")
+
+    uploaded = request.FILES.get("file")
+    if not uploaded:
+        return render(request, "payroll/contract/contract_import.html", {"error_message": _("No file uploaded.")})
+    try:
+        frame = pd.read_csv(uploaded) if uploaded.name.lower().endswith(".csv") else pd.read_excel(uploaded)
+    except Exception as error:
+        return render(request, "payroll/contract/contract_import.html", {"error_message": _("Unable to read the import file: {} ").format(error)})
+
+    aliases = {
+        "badge id": "Badge ID", "badge": "Badge ID", "id badge": "Badge ID",
+        "contract status": "Contract Status", "status": "Contract Status", "stato": "Contract Status",
+        "tipo contratto": "Tipo Contratto", "contract type": "Tipo Contratto",
+        "contract start date": "Contract Start Date", "start date": "Contract Start Date", "data inizio": "Contract Start Date",
+        "contract end date": "Contract End Date", "end date": "Contract End Date", "data fine": "Contract End Date",
+    }
+    aliases.update({name.lower(): name.title() for name in ("lun", "mar", "mer", "gio", "ven", "sab", "dom")})
+    normalise = lambda value: re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", str(value).lower())).strip()
+    frame = frame.rename(columns={column: aliases.get(normalise(column), column) for column in frame.columns})
+
+    employees = {
+        str(employee.badge_id).strip().removesuffix(".0"): employee
+        for employee in Employee.objects.entire().exclude(badge_id__isnull=True)
+    }
+    status_map = {"bozza": "draft", "draft": "draft", "attivo": "active", "active": "active", "scaduto": "expired", "expired": "expired", "terminato": "terminated", "terminated": "terminated"}
+    contract_types = {str(value): value for value, _ in Contract.TIPO_CONTRATTO_CHOICES}
+    contract_types.update({str(label).lower(): value for value, label in Contract.TIPO_CONTRATTO_CHOICES})
+    created = updated = 0
+    errors = []
+    for row_number, row in enumerate(frame.to_dict("records"), start=2):
+        badge = str(row.get("Badge ID") or "").strip().removesuffix(".0")
+        employee = employees.get(badge)
+        start = pd.to_datetime(row.get("Contract Start Date"), errors="coerce", dayfirst=True)
+        end = pd.to_datetime(row.get("Contract End Date"), errors="coerce", dayfirst=True)
+        if not employee or pd.isna(start):
+            errors.append(_("Row {}: Badge ID and Contract Start Date are required.").format(row_number))
+            continue
+        start_date, end_date = start.date(), None if pd.isna(end) else end.date()
+        if end_date and end_date < start_date:
+            errors.append(_("Row {}: end date is before start date.").format(row_number))
+            continue
+        tipo_raw = str(row.get("Tipo Contratto") or "").strip().lower()
+        defaults = {"contract_status": status_map.get(str(row.get("Contract Status") or "").strip().lower(), "draft"), "tipo_contratto": contract_types.get(tipo_raw)}
+        for day in ("lun", "mar", "mer", "gio", "ven", "sab", "dom"):
+            value = pd.to_numeric(row.get(day.title()), errors="coerce")
+            defaults[day] = 0 if pd.isna(value) else value
+        contract, was_created = Contract.objects.get_or_create(employee_id=employee, contract_start_date=start_date, contract_end_date=end_date, defaults=defaults)
+        if was_created:
+            created += 1
+        else:
+            for name, value in defaults.items():
+                setattr(contract, name, value)
+            try:
+                contract.save()
+                updated += 1
+            except ValidationError as error:
+                errors.append(_("Row {}: {}").format(row_number, error))
+    return render(request, "payroll/contract/contract_import_result.html", {"created": created, "updated": updated, "errors": errors})
 
 
 @login_required
@@ -695,9 +940,13 @@ def contract_info_initial(request):
             work_info.work_type_id.id if work_info.work_type_id is not None else ""
         ),
         "wage": work_info.basic_salary,
-        "contract_start_date": work_info.date_joining if work_info.date_joining else "",
+        "contract_start_date": (
+            work_info.date_joining.strftime("%d/%m/%Y")
+            if work_info.date_joining else ""
+        ),
         "contract_end_date": (
-            work_info.contract_end_date if work_info.contract_end_date else ""
+            work_info.contract_end_date.strftime("%d/%m/%Y")
+            if work_info.contract_end_date else ""
         ),
     }
     return JsonResponse(response_data)

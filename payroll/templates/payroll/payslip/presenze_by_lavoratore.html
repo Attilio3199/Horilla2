@@ -1,0 +1,79 @@
+{% load i18n %}
+<div class="oh-card mt-2" id="presenze-lavoratori-card">
+  <div class="oh-card__header d-flex align-items-center justify-content-between">
+    <h6 class="mb-0 fw-bold">
+      {% trans "Lavoratori" %} &mdash; {{ mese|stringformat:"02d" }}/{{ anno }}
+    </h6>
+    <button
+      class="oh-btn oh-btn--light oh-btn--sm"
+      onclick="document.getElementById('presenze-detail-container').innerHTML=''"
+    >
+      <ion-icon name="close-outline"></ion-icon>
+    </button>
+  </div>
+  <div class="oh-card__body p-0">
+    <div class="px-3 pt-3">
+      <input
+        type="search"
+        name="search"
+        class="oh-input oh-input--sm w-100"
+        placeholder="{% trans "Cerca lavoratore..." %}"
+        value="{{ search }}"
+        hx-get="{% url 'presenze-by-lavoratore' %}?mese={{ mese }}&anno={{ anno }}"
+        hx-trigger="keyup changed delay:400ms, search"
+        hx-target="#presenze-lavoratori-card"
+        hx-swap="outerHTML"
+        hx-indicator="#presenze-loading"
+      >
+    </div>
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="oh-table table table-bordered table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>{% trans "Matricola" %}</th>
+            <th>{% trans "Lavoratore" %}</th>
+            <th class="text-center">{% trans "N° Voci" %}</th>
+            <th class="text-center">{% trans "Ore Totali" %}</th>
+            <th class="text-center">{% trans "Giorni Totali" %}</th>
+            <th class="text-center"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr id="row-{{ row.matricola }}">
+            <td>{{ row.matricola }}</td>
+            <td>{{ row.lavoratore }}</td>
+            <td class="text-center">{{ row.n_voci }}</td>
+            <td class="text-center">{{ row.tot_ore|default:"-" }}</td>
+            <td class="text-center">{{ row.tot_gg|default:"-" }}</td>
+            <td class="text-center">
+              <button
+                id="btn-detail-{{ row.matricola }}"
+                class="oh-btn oh-btn--secondary oh-btn--sm"
+                data-matricola="{{ row.matricola }}"
+                data-url="{% url 'presenze-lavoratore-rows' %}"
+                data-mese="{{ mese }}"
+                data-anno="{{ anno }}"
+                onclick="togglePresenzaDetail(this)"
+              >
+                <ion-icon name="chevron-down-outline" class="mr-1"></ion-icon>
+                {% trans "Vedi tutto" %}
+              </button>
+            </td>
+          </tr>
+          <tr id="detail-{{ row.matricola }}-row" style="display:none;">
+            <td colspan="6" class="p-0" style="max-width:0; overflow:hidden;">
+              <div id="detail-{{ row.matricola }}"></div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="p-3 mb-0 text-muted">{% trans "Nessun dato trovato." %}</p>
+    {% endif %}
+  </div>
+</div>
+

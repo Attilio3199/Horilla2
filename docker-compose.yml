@@ -1,10 +1,15 @@
+# Uses an independent namespace, so it can run alongside the legacy Horilla
+# deployment without sharing container, network, or volume names.
+name: horilla2
+
 services:
-  db:
+  horilla2-db:
     image: postgres:17
+    command: ["postgres", "-p", "5433"]
     restart: unless-stopped
-    # ⬇️ AGGIUNTO: Espone la porta a tutta la rete locale (0.0.0.0)
+    # Bound to loopback on a distinct host port to avoid colliding with Horilla.
     ports:
-      - "0.0.0.0:5432:5432"
+      - "127.0.0.1:${DB_PORT:-5433}:5433"
     env_file:
       - .env
     environment:
@@ -12,59 +17,66 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - horilla2_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -p 5433 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  db-init:
+  horilla2-db-init:
     image: postgres:17
     restart: "no"
     depends_on:
-      db:
+      horilla2-db:
         condition: service_healthy
     env_file:
       - .env
     environment:
-      PGHOST: db
+      PGHOST: horilla2-db
+      PGPORT: 5433
       PGPASSWORD: ${DB_PASSWORD}
     volumes:
-      - ${DB_DUMP_PATH:-./horilla_main.dump}:/horilla_main.dump:ro
+      - ${DB_DUMP_PATH:-./horilla2_main.dump}:/horilla2_main.dump:ro
     command: >
       bash -c "
-        if [ ! -f /horilla_main.dump ]; then
+        if [ ! -f /horilla2_main.dump ]; then
           echo 'No dump file found, skipping restore (fresh database).';
         elif psql -U \"$$DB_USER\" -d \"$$DB_NAME\" -c 'SELECT 1 FROM django_migrations LIMIT 1' > /dev/null 2>&1; then
           echo 'Database already initialized, skipping restore.';
         else
           echo 'Restoring database from dump...';
-          pg_restore --no-privileges --no-owner -U \"$$DB_USER\" -d \"$$DB_NAME\" /horilla_main.dump || { echo 'pg_restore failed!'; exit 1; };
+          pg_restore --no-privileges --no-owner -U \"$$DB_USER\" -d \"$$DB_NAME\" /horilla2_main.dump || { echo 'pg_restore failed!'; exit 1; };
           echo 'Database restore complete.';
         fi
       "
 
-  server:
+  horilla2-server:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - ${DOCKER_PORT:-8001}:${DOCKER_PORT:-8001}
+      - "${DOCKER_PORT:-8002}:8002"
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      DB_HOST: db
+      DB_HOST: horilla2-db
+      DB_PORT: 5433
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      PORT: 8002
       MEDIA_ROOT: /app/media/
     depends_on:
-      db-init:
+      horilla2-db-init:
         condition: service_completed_successfully
-    command: sh ./entrypoint.sh
     volumes:
       - ./horilla:/app/horilla
       - /app/horilla/locale
       - ./media:/app/media
 
 volumes:
-  postgres_data:
+  horilla2_postgres_data:
+    external: true
+    name: horilla2_postgres_data2

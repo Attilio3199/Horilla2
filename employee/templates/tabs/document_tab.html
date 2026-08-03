@@ -17,6 +17,16 @@
 		</button>
 	</div>
 </div>
+{% if categories %}
+<div class="px-3 pb-2 d-flex gap-2 flex-wrap">
+  {% for category in categories %}<button class="oh-btn oh-btn--light-bkg" hx-get="{% url 'document-category-tab' emp_id category.id %}" hx-target="#documentCategoryContent">{{ category.name }}</button>{% endfor %}
+</div>
+<div id="documentCategoryContent"></div>
+{% endif %}
+<div class="oh-card oh-card--margin mx-3">
+  <div class="oh-card__header d-flex justify-content-between"><span class="oh-card__title oh-card__title--sm fw-bold">{% trans "Maternity" %}</span><button class="oh-btn oh-btn--light-bkg" data-toggle="oh-modal-toggle" data-target="#genericModal" hx-get="{% url 'maternita-form' emp_id %}" hx-target="#genericModalBody"><ion-icon name="add-outline"></ion-icon></button></div>
+  <div class="oh-card__body">{% for maternity in maternita_list %}<div class="d-flex justify-content-between mb-2"><span>{% trans "Child" %} {{ maternity.n_figlio }} · {{ maternity.nome_figlio|default:"—" }}</span><span><button class="oh-btn oh-btn--light-bkg" data-toggle="oh-modal-toggle" data-target="#genericModal" hx-get="{% url 'maternita-edit' emp_id maternity.id %}" hx-target="#genericModalBody"><ion-icon name="create-outline"></ion-icon></button><form class="d-inline" method="post" action="{% url 'maternita-delete' maternity.id %}">{% csrf_token %}<button class="oh-btn oh-btn--danger-outline"><ion-icon name="trash-outline"></ion-icon></button></form></span></div>{% empty %}<span class="oh-text--light">{% trans "No maternity records." %}</span>{% endfor %}</div>
+</div>
 {% if documents %}
 	<div class="mt-2">
 		{% for document in documents %}
@@ -156,6 +166,20 @@
 	        <h5 class="oh-404__subtitle">{% trans "No documents have been uploaded yet." %}</h5>
 	    </div>
 	</div>
+{% endif %}
+
+{% if variazioni_orarie or contracts %}
+<div class="oh-card oh-card--margin mt-4">
+	<div class="oh-card__header"><span class="oh-card__title oh-card__title--sm fw-bold">{% trans "Contract documents" %}</span></div>
+	<div class="oh-card__body">
+		{% for contract in contracts %}
+			{% if contract.contract_document %}<a class="oh-btn oh-btn--light-bkg me-2 mb-2" href="{{ contract.contract_document.url }}" target="_blank"><ion-icon name="document-outline"></ion-icon>{{ contract.contract_name|default:"Contract" }}</a>{% endif %}
+		{% endfor %}
+		{% for variation in variazioni_orarie %}
+			{% if variation.attachment %}<a class="oh-btn oh-btn--light-bkg me-2 mb-2" href="{{ variation.attachment.url }}" target="_blank"><ion-icon name="document-attach-outline"></ion-icon>{% trans "Hourly variation" %} · {{ variation.contract_start_date|date:"d/m/Y" }}</a>{% endif %}
+		{% endfor %}
+	</div>
+</div>
 {% endif %}
 
 <div

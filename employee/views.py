@@ -125,12 +125,14 @@ from horilla.methods import dynamic_attr, get_horilla_model_class
 from horilla_audit.models import AccountBlockUnblock, HistoryTrackingFields
 from horilla_auth.models import HorillaUser
 from horilla_documents.forms import (
+    DocumentCategoryForm,
     DocumentForm,
     DocumentRejectForm,
     DocumentRequestForm,
     DocumentUpdateForm,
+    MaternitaForm,
 )
-from horilla_documents.models import Document, DocumentRequest
+from horilla_documents.models import Document, DocumentCategory, DocumentRequest, Maternita
 from notifications.signals import notify
 
 
@@ -394,6 +396,18 @@ def about_tab(request, pk, **kwargs):
     """
     employee = Employee.objects.get(id=pk)
     contracts = employee.contract_set.all() if apps.is_installed("payroll") else None
+    variazioni_orarie = []
+    if apps.is_installed("payroll"):
+        from payroll.models.models import ContractLevel, VarzioneOraria
+
+        variazioni_orarie = VarzioneOraria.objects.entire().filter(
+            employee_id=employee
+        ).order_by("-contract_start_date")
+        contract_levels = ContractLevel.objects.entire().filter(
+            employee_id=employee
+        ).order_by("-data_decorrenza", "-id")
+    else:
+        contract_levels = None
     employee_leaves = (
         employee.available_leave.all() if apps.is_installed("leave") else None
     )
@@ -404,6 +418,8 @@ def about_tab(request, pk, **kwargs):
             "employee": employee,
             "employee_leaves": employee_leaves,
             "contracts": contracts,
+            "variazioni_orarie": variazioni_orarie,
+            "contract_levels": contract_levels,
         },
     )
 
@@ -717,13 +733,69 @@ def document_tab(request, pk):
 
     form = DocumentUpdateForm(request.POST, request.FILES)
     documents = Document.objects.filter(employee_id=pk)
+    variazioni_orarie, contracts = [], []
+    if apps.is_installed("payroll"):
+        from payroll.models.models import Contract, VarzioneOraria
+
+        variazioni_orarie = VarzioneOraria.objects.entire().filter(
+            employee_id_id=pk
+        ).order_by("-contract_start_date")
+        contracts = Contract.objects.filter(employee_id_id=pk).order_by(
+            "-contract_start_date"
+        )
 
     context = {
         "documents": documents,
         "form": form,
         "emp_id": pk,
+        "variazioni_orarie": variazioni_orarie,
+        "contracts": contracts,
+        "categories": DocumentCategory.objects.filter(document__employee_id=pk).distinct(),
+        "maternita_list": Maternita.objects.filter(employee_id_id=pk).order_by("n_figlio"),
     }
     return render(request, "tabs/document_tab.html", context=context)
+
+
+@login_required
+@hx_request_required
+@owner_can_enter("horilla_documents.view_document", Employee)
+def document_category_tab(request, pk, category_id):
+    category = get_object_or_404(DocumentCategory, id=category_id)
+    return render(request, "tabs/document_category_tab.html", {
+        "documents": Document.objects.filter(employee_id=pk, category=category),
+        "category": category,
+        "emp_id": pk,
+    })
+
+
+@login_required
+def get_document_subcategories(request):
+    category_id = request.GET.get("category_id")
+    rows = DocumentCategory.objects.filter(id=category_id).values_list("subcategories__id", "subcategories__name") if category_id else []
+    return JsonResponse({"subcategories": [{"id": pk, "name": name} for pk, name in rows if pk]})
+
+
+@login_required
+@permission_required("horilla_documents.add_document")
+def maternita_form(request, pk, maternita_id=None):
+    employee = get_object_or_404(Employee, id=pk)
+    instance = get_object_or_404(Maternita, id=maternita_id, employee_id=employee) if maternita_id else None
+    form = MaternitaForm(request.POST or None, request.FILES or None, instance=instance, initial={"employee_id": employee.id})
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, _("Maternity record saved."))
+        return HttpResponse("<script>window.location.reload()</script>")
+    return render(request, "tabs/htmx/maternita_form.html", {"form": form, "employee": employee})
+
+
+@login_required
+@permission_required("horilla_documents.delete_document")
+def maternita_delete(request, pk):
+    maternity = get_object_or_404(Maternita, id=pk)
+    if request.method == "POST":
+        maternity.delete()
+        messages.success(request, _("Maternity record deleted."))
+    return HttpResponse("<script>window.location.reload()</script>")
 
 
 @login_required

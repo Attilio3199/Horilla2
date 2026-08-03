@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group
 from django.urls import path, re_path
 from django.utils.translation import gettext_lazy as _
 
-from base import announcement
+from base import announcement, turni_views
 from base import dashboard as dashboard_module
 from base import ess_dashboard, request_and_approve, views
 from base.cbv import (
@@ -66,6 +66,7 @@ from horilla_audit.models import AuditTag
 
 urlpatterns = [
     path("", views.home, name="home-page"),
+    path("turni/import", turni_views.turni_import, name="turni-import"),
     path("dashboard/", dashboard_module.main_dashboard_view, name="dashboard"),
     path(
         "dashboard/api/kpi/",

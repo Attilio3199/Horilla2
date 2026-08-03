@@ -56,6 +56,10 @@ SUBMENUS = [
         "redirect": reverse("payroll-settings-view"),
         "accessibility": "payroll.sidebar.payroll_settings_accessibility",
     },
+    {
+        "menu": _("Controllo"),
+        "redirect": reverse("controllo-cedolini"),
+    },
 ]
 
 

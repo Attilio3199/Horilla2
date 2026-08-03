@@ -16,6 +16,17 @@
 </div>
 <script>
     $(document).ready(function () {
+        function refreshSubcategories() {
+            var category = $("#id_category").val();
+            var subcategory = $("#id_subcategory");
+            if (!subcategory.length) return;
+            subcategory.empty().append(new Option("---------", ""));
+            if (!category) return;
+            $.get("{% url 'get-document-subcategories' %}", {category_id: category}, function (data) {
+                data.subcategories.forEach(function (item) { subcategory.append(new Option(item.name, item.id)); });
+            });
+        }
+        $("#id_category").on("change", refreshSubcategories);
         var date = $("#id_expiry_date").val();
         var notifyLabel = $("[for='id_notify_before']");
         var notifyInput = $("#id_notify_before");

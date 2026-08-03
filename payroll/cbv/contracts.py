@@ -161,6 +161,11 @@ class ContractsNav(HorillaNavView):
                             """
         self.actions = [
             {
+                "action": _("Import"),
+                "attrs": f'''data-toggle="oh-modal-toggle" data-target="#genericModal"
+                    hx-get="{reverse_lazy('contract-import')}" hx-target="#genericModalBody"''',
+            },
+            {
                 "action": _("Export"),
                 "attrs": f"""
                         data-toggle="oh-modal-toggle"

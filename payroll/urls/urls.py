@@ -17,6 +17,28 @@ urlpatterns = [
     path("", include("payroll.urls.tax_urls")),
     path("contract-create/", views.contract_create, name="contract-create"),
     path(
+        "variazione-oraria/<int:employee_id>/",
+        views.variazione_oraria_create,
+        name="variazione-oraria-create",
+    ),
+    path(
+        "variazione-oraria-delete/<int:variazione_id>/",
+        views.variazione_oraria_delete,
+        name="variazione-oraria-delete",
+    ),
+    path(
+        "contract-level/<int:employee_id>/",
+        views.contract_level_create,
+        name="contract-level-create",
+    ),
+    path(
+        "contract-level-delete/<int:level_id>/",
+        views.contract_level_delete,
+        name="contract-level-delete",
+    ),
+    path("contract-import/", views.contract_import, name="contract-import"),
+    path("contract-import-file/", views.contract_import_file, name="contract-import-file"),
+    path(
         "update-contract/<int:contract_id>/",
         views.contract_update,
         name="update-contract",

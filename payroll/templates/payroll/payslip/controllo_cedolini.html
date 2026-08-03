@@ -1,0 +1,133 @@
+{% extends 'index.html' %}{% block content %}{% load i18n %}{% load static %}
+
+<section class="oh-wrapper oh-main__topbar">
+  <div class="oh-main__titlebar oh-main__titlebar--left">
+    <h1 class="oh-main__titlebar-title fw-bold">{% trans "Controllo Cedolini" %}</h1>
+  </div>
+  <div class="oh-main__titlebar-button-container">
+    <a href="{% url 'view-payslip' %}" class="oh-btn oh-btn--light oh-btn--sm">
+      <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon>
+      {% trans "Torna ai Cedolini" %}
+    </a>
+  </div>
+</section>
+
+<div class="oh-wrapper mt-4">
+  <style>
+    .payslip-control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 1.25rem;
+      margin-top: .5rem;
+    }
+    .payslip-control-card {
+      display: flex;
+      min-height: 148px;
+      height: 100%;
+      border: 1px solid #e8eaf0;
+      border-left: 5px solid var(--control-color);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(32, 40, 66, .06);
+      transition: transform .18s ease, box-shadow .18s ease;
+      overflow: hidden;
+    }
+    .payslip-control-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(32, 40, 66, .14);
+    }
+    .payslip-control-card__body {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding: 1.4rem;
+    }
+    .payslip-control-card__icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--control-color) 12%, white);
+      color: var(--control-color);
+      font-size: 1.6rem;
+    }
+    .payslip-control-card h5 { color: #222b45; font-size: 1rem; }
+    .payslip-control-card p { line-height: 1.45; }
+  </style>
+  <div class="payslip-control-grid">
+
+    {# ── Presenze ── #}
+    <div>
+      <a href="{% url 'controllo-cedolini-presenze' %}" class="text-decoration-none">
+        <div class="payslip-control-card" style="--control-color:#0d6efd;">
+          <div class="payslip-control-card__body">
+            <ion-icon name="time-outline" class="payslip-control-card__icon"></ion-icon>
+            <div>
+              <h5 class="mb-1 fw-bold">{% trans "Presenze" %}</h5>
+              <p class="mb-0 text-muted small">
+                {% trans "Confronto libro presenze (cedolini) vs turni orari." %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    {# ── Importi / Premi ── #}
+    <div>
+      <a href="{% url 'controllo-cedolini-importi' %}" class="text-decoration-none">
+        <div class="payslip-control-card" style="--control-color:#198754;">
+          <div class="payslip-control-card__body">
+            <ion-icon name="cash-outline" class="payslip-control-card__icon"></ion-icon>
+            <div>
+              <h5 class="mb-1 fw-bold">{% trans "Importi (voce 429)" %}</h5>
+              <p class="mb-0 text-muted small">
+                {% trans "Controllo premi importati vs voce 429 in busta paga." %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    {# ── Acconti ── #}
+    <div>
+      <a href="{% url 'controllo-cedolini-acconti' %}" class="text-decoration-none">
+        <div class="payslip-control-card" style="--control-color:#6f42c1;">
+          <div class="payslip-control-card__body">
+            <ion-icon name="wallet-outline" class="payslip-control-card__icon"></ion-icon>
+            <div>
+              <h5 class="mb-1 fw-bold">{% trans "Acconti" %}</h5>
+              <p class="mb-0 text-muted small">
+                {% trans "Controllo acconti (in fase di sviluppo)." %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    {# ── Malattie ── #}
+    <div>
+      <a href="{% url 'controllo-cedolini-malattie' %}" class="text-decoration-none">
+        <div class="payslip-control-card" style="--control-color:#dc3545;">
+          <div class="payslip-control-card__body">
+            <ion-icon name="medkit-outline" class="payslip-control-card__icon"></ion-icon>
+            <div>
+              <h5 class="mb-1 fw-bold">{% trans "Malattie" %}</h5>
+              <p class="mb-0 text-muted small">
+                {% trans "Voci MALATTIA da libro presenze per periodo." %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

@@ -15,11 +15,14 @@ from employee.models import Employee
 from payroll.context_processors import get_active_employees
 from payroll.models.models import (
     Contract,
+    ContractLevel,
     EncashmentGeneralSettings,
     PayrollGeneralSetting,
     ReimbursementFile,
     ReimbursementrequestComment,
 )
+
+DATE_INPUT_FORMATS = ["%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y", "%Y-%m-%d"]
 
 
 class ContractForm(ModelForm):
@@ -28,8 +31,19 @@ class ContractForm(ModelForm):
     """
 
     verbose_name = _("Contract")
-    contract_start_date = forms.DateField()
-    contract_end_date = forms.DateField(required=False)
+    contract_start_date = forms.DateField(
+        input_formats=DATE_INPUT_FORMATS,
+        widget=forms.DateInput(
+            format="%d/%m/%Y", attrs={"type": "text", "placeholder": "DD/MM/YYYY"}
+        ),
+    )
+    contract_end_date = forms.DateField(
+        required=False,
+        input_formats=DATE_INPUT_FORMATS,
+        widget=forms.DateInput(
+            format="%d/%m/%Y", attrs={"type": "text", "placeholder": "DD/MM/YYYY"}
+        ),
+    )
 
     class Meta:
         """
@@ -47,20 +61,16 @@ class ContractForm(ModelForm):
         self.fields["employee_id"].widget.attrs.update(
             {"onchange": "contractInitial(this)"}
         )
-        self.fields["contract_start_date"].widget = widgets.DateInput(
-            attrs={
-                "type": "date",
-                "class": "oh-input w-100",
-                "placeholder": "Select a date",
-            }
-        )
-        self.fields["contract_end_date"].widget = widgets.DateInput(
-            attrs={
-                "type": "date",
-                "class": "oh-input w-100",
-                "placeholder": "Select a date",
-            }
-        )
+        for field_name in ("contract_start_date", "contract_end_date"):
+            self.fields[field_name].input_formats = DATE_INPUT_FORMATS
+            self.fields[field_name].widget.format = "%d/%m/%Y"
+            self.fields[field_name].widget.attrs.update(
+                {"type": "text", "class": "oh-input w-100", "placeholder": "DD/MM/YYYY", "autocomplete": "off"}
+            )
+        if self.instance and self.instance.contract_start_date:
+            self.initial["contract_start_date"] = self.instance.contract_start_date.strftime("%d/%m/%Y")
+        if self.instance and self.instance.contract_end_date:
+            self.initial["contract_end_date"] = self.instance.contract_end_date.strftime("%d/%m/%Y")
         self.fields["contract_status"].widget.attrs.update(
             {
                 "class": "oh-select",
@@ -95,6 +105,63 @@ class ContractForm(ModelForm):
         Render the url for contract status update through hx request
         """
         return f"/payroll/update-contract-status/{instance.pk}"
+
+
+class VarzioneOrariaForm(ContractForm):
+    """Contract form used to register a dated change of weekly hours."""
+
+    verbose_name = _("Variazione Oraria")
+    contratto_selezionato = forms.ModelChoiceField(
+        queryset=Contract.objects.none(),
+        label=_("Contratto da modificare"),
+        required=True,
+        empty_label=_("-- Seleziona Contratto --"),
+    )
+
+    def __init__(self, *args, contracts=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["contratto_selezionato"].queryset = (
+            contracts if contracts is not None else Contract.objects.none()
+        )
+        self.fields["contratto_selezionato"].widget.attrs.update({"class": "oh-select"})
+        self.fields["employee_id"].widget = forms.HiddenInput()
+        self.fields.pop("contract_status", None)
+        self.fields["attachment"] = forms.FileField(required=False, label=_("Allegato"))
+        selected = self.fields.pop("contratto_selezionato")
+        self.fields = {"contratto_selezionato": selected, **self.fields}
+
+    def as_p(self):
+        return render_to_string("payroll/common/variazione_oraria_contract_form.html", {"form": self})
+
+
+class ContractLevelForm(ModelForm):
+    """Italian contract-level history form for a single employee."""
+
+    verbose_name = _("Livello")
+    data_decorrenza = forms.DateField(
+        input_formats=DATE_INPUT_FORMATS,
+        widget=forms.DateInput(
+            format="%d/%m/%Y",
+            attrs={"type": "text", "placeholder": "DD/MM/YYYY", "autocomplete": "off"},
+        ),
+    )
+
+    class Meta:
+        model = ContractLevel
+        fields = ["employee_id", "lvl", "data_decorrenza", "note"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["employee_id"].widget = forms.HiddenInput()
+        self.fields["lvl"].widget.attrs.update(
+            {"class": "oh-input w-100", "min": 0, "step": 1}
+        )
+        self.fields["note"].required = False
+        self.fields["note"].widget.attrs.update({"class": "oh-input w-100", "rows": 3})
+        if self.instance and self.instance.data_decorrenza:
+            self.initial["data_decorrenza"] = self.instance.data_decorrenza.strftime(
+                "%d/%m/%Y"
+            )
 
 
 class ReimbursementRequestCommentForm(ModelForm):

@@ -1,0 +1,197 @@
+{% extends 'index.html' %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+
+<section class="oh-wrapper oh-main__topbar">
+  <div class="oh-main__titlebar oh-main__titlebar--left">
+    <h1 class="oh-main__titlebar-title fw-bold">{% trans "Importa Premi" %}</h1>
+  </div>
+</section>
+
+<div class="oh-wrapper mt-4">
+  <div class="oh-card" style="max-width:580px; margin:auto;">
+    <div class="oh-card__body">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="oh-alert oh-alert--{{ message.tags }} mb-3">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      {% if warn_conflicts %}
+      {# ── Conflitti: badge_id già presenti per mese/anno ── #}
+      <div class="oh-alert oh-alert--warning mb-3">
+        <strong>{% trans "Attenzione – Badge ID già presenti:" %}</strong><br>
+        {% blocktrans with n=n_conflicts tot=n_total_badge m=mese a=anno %}
+          {{ n }} badge_id su {{ tot }} risultano già presenti in payslip_importi per {{ m }}/{{ a }}.
+        {% endblocktrans %}
+      </div>
+      <ul class="mb-3 small" style="max-height:200px;overflow-y:auto;">
+        {% for bid in conflict_badge_ids %}<li><code>{{ bid }}</code></li>{% endfor %}
+      </ul>
+      <form method="post" action="{% url 'import-payslip-importi' %}">
+        {% csrf_token %}
+        <input type="hidden" name="step" value="conflicts">
+        <p class="text-muted small">{% trans "Cosa vuoi fare per i badge_id in conflitto?" %}</p>
+        <div class="d-flex gap-2">
+          <button type="submit" name="conflict_action" value="replace" class="oh-btn oh-btn--danger">
+            <ion-icon name="refresh-outline" class="mr-1"></ion-icon>
+            {% trans "Sostituisci i vecchi dati" %}
+          </button>
+          <button type="submit" name="conflict_action" value="keep" class="oh-btn oh-btn--secondary">
+            <ion-icon name="lock-closed-outline" class="mr-1"></ion-icon>
+            {% trans "Mantieni i vecchi, importa solo i nuovi badge_id" %}
+          </button>
+          <a href="{% url 'import-payslip-importi' %}" class="oh-btn oh-btn--light">{% trans "Annulla" %}</a>
+        </div>
+      </form>
+
+      {% elif warn_existing %}
+      {# ── Avviso legacy: esistono già dati per questo mese/anno ── #}
+      <div class="oh-alert oh-alert--danger mb-3">
+        <strong>{% trans "Attenzione:" %}</strong>
+        {% blocktrans with count=existing_count m=mese a=anno %}
+          Esistono già {{ count }} righe di premi per {{ m }}/{{ a }}.
+          Vuoi eliminare i dati esistenti e importare il nuovo file?
+        {% endblocktrans %}
+      </div>
+
+      <p class="text-muted small mb-3">
+        {% trans "Seleziona nuovamente il file Excel e scegli un'azione." %}
+      </p>
+
+      <form method="post" enctype="multipart/form-data" action="{% url 'import-payslip-importi' %}">
+        {% csrf_token %}
+        <input type="hidden" name="mese" value="{{ mese }}">
+        <input type="hidden" name="anno" value="{{ anno }}">
+        <input type="hidden" name="confirm_overwrite" value="yes">
+
+        <div class="oh-input-group mb-4">
+          <label class="oh-label" for="id_file_ow">{% trans "File Excel (premi)" %} *</label>
+          <input type="file" class="oh-input w-100" id="id_file_ow" name="file"
+                 accept=".xlsx,.xls" required />
+          <small class="text-muted">{% trans "Colonna 1 = NEG, colonna 3 = Badge ID, colonna 4 = Importo. La prima riga (intestazione) viene saltata." %}</small>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="oh-btn oh-btn--danger">
+            <ion-icon name="cloud-upload-outline" class="mr-1"></ion-icon>
+            {% trans "Sovrascrivi e Importa" %}
+          </button>
+          <a href="{% url 'view-payslip' %}" class="oh-btn oh-btn--light">{% trans "Annulla" %}</a>
+        </div>
+      </form>
+
+      {% elif step2 %}
+      {# ── Step 2: badge_id senza matricola ── #}
+      <div class="oh-alert oh-alert--warning mb-3">
+        <strong>{% trans "Badge ID non trovati:" %}</strong>
+        {% blocktrans with n=n_unmatched tot=n_total %}
+          {{ n }} badge_id su {{ tot }} righe non sono stati trovati nell'anagrafica dipendenti.
+        {% endblocktrans %}
+      </div>
+      <p class="text-muted small mb-3">
+        {% trans "Inserisci la matricola per i badge_id che vuoi risolvere (puoi lasciare vuoti quelli che non conosci: verranno importati senza matricola)." %}
+      </p>
+
+      <form method="post" action="{% url 'import-payslip-importi' %}">
+        {% csrf_token %}
+        <input type="hidden" name="step" value="2">
+        <div class="table-responsive mb-3">
+          <table class="table table-sm table-bordered">
+            <thead class="table-warning">
+              <tr>
+                <th>{% trans "Badge ID" %}</th>
+                <th>{% trans "Matricola (lascia vuoto per saltare)" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for badge_id in unmatched %}
+              <tr>
+                <td><code>{{ badge_id }}</code></td>
+                <td>
+                  <input type="text" name="mat_{{ badge_id }}"
+                         class="oh-input oh-input--sm w-100"
+                         placeholder="Es. 10321002820" autocomplete="off">
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="oh-btn oh-btn--primary">
+            <ion-icon name="cloud-upload-outline" class="mr-1"></ion-icon>
+            {% trans "Importa" %}
+          </button>
+          <a href="{% url 'import-payslip-importi' %}" class="oh-btn oh-btn--light">{% trans "Annulla" %}</a>
+        </div>
+      </form>
+
+      {% else %}
+      {# ── Form standard ── #}
+      <p class="mb-3">
+        {% trans "Seleziona il mese e l'anno di riferimento, poi carica il file Excel dei premi." %}
+      </p>
+      <p class="text-muted small mb-3">
+        {% trans "Struttura Excel: colonna 1 = NEG, colonna 2 = ignorata, colonna 3 = Badge ID, colonna 4 = Importo. La prima riga (intestazione) viene saltata." %}
+      </p>
+
+      <form method="post" enctype="multipart/form-data" action="{% url 'import-payslip-importi' %}">
+        {% csrf_token %}
+
+        <div class="row mb-3">
+          <div class="col-sm-6">
+            <div class="oh-input-group">
+              <label class="oh-label" for="id_mese">{% trans "Mese" %} *</label>
+              <select class="oh-select w-100" id="id_mese" name="mese" required>
+                <option value="">-- {% trans "Seleziona" %} --</option>
+                {% for num, nome in months %}
+                  <option value="{{ num }}" {% if mese == num %}selected{% endif %}>
+                    {{ num|stringformat:"02d" }} – {{ nome }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="oh-input-group">
+              <label class="oh-label" for="id_anno">{% trans "Anno" %} *</label>
+              <input
+                type="number"
+                class="oh-input w-100"
+                id="id_anno"
+                name="anno"
+                min="2000"
+                max="2099"
+                value="{{ anno|default:current_year }}"
+                placeholder="es. 2026"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="oh-input-group mb-4">
+          <label class="oh-label" for="id_file">{% trans "File Excel (premi)" %} *</label>
+          <input type="file" class="oh-input w-100" id="id_file" name="file"
+                 accept=".xlsx,.xls" required />
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="oh-btn oh-btn--primary">
+            <ion-icon name="cloud-upload-outline" class="mr-1"></ion-icon>
+            {% trans "Importa" %}
+          </button>
+          <a href="{% url 'view-payslip' %}" class="oh-btn oh-btn--light">{% trans "Annulla" %}</a>
+        </div>
+      </form>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+

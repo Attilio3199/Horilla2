@@ -63,6 +63,14 @@
     padding: 0 !important;
 }
 
+.oh-card {
+    border-radius: 18px !important;
+}
+
+.oh-card-dashboard {
+    border-radius: 18px !important;
+}
+
 .oh-modal__close--custom {
     border: none;
     background: none;

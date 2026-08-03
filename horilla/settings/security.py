@@ -75,8 +75,10 @@ def apply_secure_defaults(env, debug: bool) -> dict:
     plain-HTTP Docker + nginx :80 installs keep working.
     """
     settings = {
-        "SESSION_COOKIE_SECURE": True,
-        "CSRF_COOKIE_SECURE": True,
+        # Keep the secure default for HTTPS deployments.  A local-network
+        # test instance served directly over HTTP can explicitly opt out.
+        "SESSION_COOKIE_SECURE": env.bool("SESSION_COOKIE_SECURE", default=True),
+        "CSRF_COOKIE_SECURE": env.bool("CSRF_COOKIE_SECURE", default=True),
         "SECURE_CONTENT_TYPE_NOSNIFF": True,
         "SECURE_REFERRER_POLICY": "strict-origin-when-cross-origin",
         "SECURE_PROXY_SSL_HEADER": ("HTTP_X_FORWARDED_PROTO", "https"),

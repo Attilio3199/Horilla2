@@ -29,6 +29,18 @@ from payroll.models.models import (
 )
 from payroll.models.tax_models import TaxBracket
 
+DATE_INPUT_FORMATS = ["%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y", "%Y-%m-%d"]
+
+
+def apply_italian_date_inputs(form, field_names):
+    for name in field_names:
+        field = form.fields.get(name)
+        if field and isinstance(field.widget, forms.DateInput):
+            field.input_formats = DATE_INPUT_FORMATS
+            field.widget.input_type = "text"
+            field.widget.format = "%d/%m/%Y"
+            field.widget.attrs.update({"placeholder": "DD/MM/YYYY", "autocomplete": "off"})
+
 
 class ContractFilter(HorillaFilterSet):
     """
@@ -96,6 +108,10 @@ class ContractFilter(HorillaFilterSet):
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
         super().__init__(data=data, queryset=queryset, request=request, prefix=prefix)
+        apply_italian_date_inputs(
+            self.form,
+            ["contract_start_date", "contract_end_date", "contract_start_date_from", "contract_start_date_till", "contract_end_date_from", "contract_end_date_till"],
+        )
         for field in self.form.fields.keys():
             self.form.fields[field].widget.attrs["id"] = f"{uuid.uuid4()}"
 
@@ -123,7 +139,8 @@ class ContractFilter(HorillaFilterSet):
                 employee_id__employee_last_name__icontains=last_name
             )
         queryset = queryset | og_queryset.filter(contract_name__icontains=value)
-        return queryset
+        queryset = queryset | og_queryset.filter(employee_id__badge_id__icontains=value)
+        return queryset.distinct()
 
 
 class AllowanceFilter(HorillaFilterSet):

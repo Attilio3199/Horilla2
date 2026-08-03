@@ -152,7 +152,14 @@
                 if (!target.closest("form").length) {
                     target.html(`<div class="animated-background"></div>`);
                 }
+        });
+    </script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/sw.js");
             });
-        </script>
-    </body>
+        }
+    </script>
+</body>
 </html>

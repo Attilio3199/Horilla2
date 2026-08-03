@@ -235,6 +235,26 @@ class PayslipNav(HorillaNavView):
                             style="cursor: pointer; color:red !important"
                              """,
                 },
+                {
+                    "action": _("Payroll checks"),
+                    "attrs": f'''href="{reverse('controllo-cedolini')}" style="cursor: pointer;"''',
+                },
+                {
+                    "action": _("Import attendance book"),
+                    "attrs": f'''href="{reverse('import-payslip-presenze')}" style="cursor: pointer;"''',
+                },
+                {
+                    "action": _("Import payslip body"),
+                    "attrs": f'''href="{reverse('import-payslip-corpo')}" style="cursor: pointer;"''',
+                },
+                {
+                    "action": _("Import bonuses"),
+                    "attrs": f'''href="{reverse('import-payslip-importi')}" style="cursor: pointer;"''',
+                },
+                {
+                    "action": _("Attendance summary"),
+                    "attrs": f'''href="{reverse('presenze-by-lavoratore')}" style="cursor: pointer;"''',
+                },
             ]
         else:
             self.create_attrs = None

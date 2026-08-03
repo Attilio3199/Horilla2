@@ -1,0 +1,261 @@
+{% extends 'index.html' %}{% block content %}{% load i18n %}{% load static %}
+
+<section class="oh-wrapper oh-main__topbar">
+  <div class="oh-main__titlebar oh-main__titlebar--left">
+    <h1 class="oh-main__titlebar-title fw-bold">{% trans "Controllo Acconti – Voce 800" %}</h1>
+  </div>
+  <div class="oh-main__titlebar-button-container">
+    <a href="{% url 'controllo-cedolini' %}" class="oh-btn oh-btn--light oh-btn--sm">
+      <ion-icon name="arrow-back-outline" class="mr-1"></ion-icon>
+      {% trans "Torna al Controllo" %}
+    </a>
+  </div>
+</section>
+
+<div class="oh-wrapper mt-3">
+
+  {# ── Selettore periodo ── #}
+  <div class="oh-card mb-3">
+    <div class="oh-card__header">
+      <h5 class="mb-0 fw-bold">{% trans "Periodo da controllare" %}</h5>
+    </div>
+    <div class="oh-card__body">
+      <form method="post" action="{% url 'controllo-cedolini-acconti' %}" class="d-flex align-items-end gap-3 flex-wrap">
+        {% csrf_token %}
+        <div>
+          <label class="oh-label">{% trans "Mese / Anno" %}</label>
+          <select name="mese_anno" class="oh-input oh-input--sm" id="mese-anno-select"
+                  onchange="this.form.querySelector('[name=mese]').value=this.value.split('_')[0];
+                            this.form.querySelector('[name=anno]').value=this.value.split('_')[1];">
+            <option value="">— {% trans "seleziona" %} —</option>
+            {% for m, a in periodi %}
+            <option value="{{ m }}_{{ a }}"
+              {% if m == mese and a == anno %}selected{% endif %}>
+              {{ m|stringformat:"02d" }}/{{ a }}
+            </option>
+            {% endfor %}
+          </select>
+          <input type="hidden" name="mese" value="{{ mese|default:'' }}">
+          <input type="hidden" name="anno" value="{{ anno|default:'' }}">
+        </div>
+        <button type="submit" class="oh-btn oh-btn--secondary oh-btn--sm">
+          <ion-icon name="git-compare-outline" class="mr-1"></ion-icon>
+          {% trans "Avvia Controllo" %}
+        </button>
+      </form>
+      {% if mese %}
+      <p class="text-muted small mt-2 mb-0">
+        {% trans "Confronto:" %}
+        <strong>{{ mese_prec|stringformat:"02d" }}/{{ anno_prec }}</strong>
+        → <strong>{{ mese|stringformat:"02d" }}/{{ anno }}</strong>
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if risultati is not None %}
+
+  {# ── Badge riepilogo ── #}
+  <div class="d-flex gap-3 mb-3 flex-wrap align-items-center">
+    <span class="badge bg-secondary fs-6 px-3 py-2">
+      <strong>{{ n_totale }}</strong> {% trans "totali" %}
+    </span>
+    <span class="badge bg-success fs-6 px-3 py-2">
+      <strong>{{ n_nuovi }}</strong> {% trans "nuovi" %}
+    </span>
+    <span class="badge bg-danger fs-6 px-3 py-2">
+      <strong>{{ n_spariti }}</strong> {% trans "spariti" %}
+    </span>
+    <span class="badge bg-dark fs-6 px-3 py-2">
+      <strong>{{ n_busta_np }}</strong> {% trans "busta non presente" %}
+    </span>
+    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+      <strong>{{ n_cambiati }}</strong> {% trans "importo cambiato" %}
+    </span>
+    <span class="badge bg-light text-dark border fs-6 px-3 py-2">
+      <strong>{{ n_uguali }}</strong> {% trans "uguali" %}
+    </span>
+
+    {% if risultati %}
+    <div class="ms-auto d-flex gap-2">
+      <a href="{% url 'export-acconti-excel' %}?mese={{ mese }}&anno={{ anno }}"
+         class="oh-btn oh-btn--success oh-btn--sm">
+        <ion-icon name="document-outline" class="mr-1"></ion-icon>
+        {% trans "Scarica Excel" %}
+      </a>
+      <a href="{% url 'export-acconti-docx' %}?mese={{ mese }}&anno={{ anno }}"
+         class="oh-btn oh-btn--secondary oh-btn--sm">
+        <ion-icon name="document-text-outline" class="mr-1"></ion-icon>
+        {% trans "Scarica Word" %}
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if risultati %}
+  <div class="oh-card">
+    <div class="oh-card__body p-0">
+
+      {# ── Barra filtro ── #}
+      <div class="d-flex align-items-center gap-2 px-3 py-2 border-bottom flex-wrap">
+        <ion-icon name="search-outline" style="color:#6c757d;font-size:1.1rem;"></ion-icon>
+        <input type="search" id="acc-search" class="oh-input oh-input--sm"
+               style="min-width:220px;max-width:400px;"
+               placeholder="{% trans 'Filtra per matricola, cognome, nome, voce, stato…' %}"
+               autocomplete="off">
+        <div class="ms-auto d-flex gap-2 align-items-center">
+          <label class="oh-label mb-0 small">{% trans "Mostra:" %}</label>
+          <select id="acc-stato-filter" class="oh-input oh-input--sm" style="width:auto;">
+            <option value="">{% trans "Tutti" %}</option>
+            <option value="nuovo">{% trans "Nuovi" %}</option>
+            <option value="sparito">{% trans "Spariti" %}</option>
+            <option value="busta_non_presente">{% trans "Busta non presente" %}</option>
+            <option value="cambio_importo">{% trans "Importo cambiato" %}</option>
+            <option value="uguale">{% trans "Uguali" %}</option>
+          </select>
+          <span class="text-muted small" id="acc-count">{{ n_totale }} {% trans "righe" %}</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="oh-table table table-sm table-bordered table-hover mb-0" id="acc-table">
+          <thead class="table-light">
+            <tr>
+              <th class="sortable" data-col="0" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Matricola" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable" data-col="1" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Cognome" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable" data-col="2" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Nome" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable" data-col="3" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Descrizione Voce" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-end" data-col="4" data-type="num" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Importo" %} {{ mese_prec|stringformat:"02d" }}/{{ anno_prec }}
+                <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-end" data-col="5" data-type="num" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Importo" %} {{ mese|stringformat:"02d" }}/{{ anno }}
+                <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-end" data-col="6" data-type="num" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                Δ <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+              <th class="sortable text-center" data-col="7" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                {% trans "Stato" %} <ion-icon name="swap-vertical-outline" class="sort-ico" style="font-size:.8rem;vertical-align:middle;opacity:.5;"></ion-icon>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="acc-tbody">
+            {% for r in risultati %}
+            <tr class="{% if r.stato == 'nuovo' %}table-success{% elif r.stato == 'sparito' %}table-danger{% elif r.stato == 'busta_non_presente' %}table-secondary{% elif r.stato == 'cambio_importo' %}table-warning{% endif %}"
+                data-stato="{{ r.stato }}">
+              <td><code>{{ r.matricola }}</code></td>
+              <td>{{ r.cognome }}</td>
+              <td>{{ r.nome }}</td>
+              <td>{{ r.descrizione_voce }}</td>
+              <td class="text-end" data-val="{{ r.importo_precedente|default:'' }}">
+                {% if r.importo_precedente is not None %}{{ r.importo_precedente|floatformat:2 }} €{% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
+              <td class="text-end" data-val="{{ r.importo_corrente|default:'' }}">
+                {% if r.importo_corrente is not None %}{{ r.importo_corrente|floatformat:2 }} €{% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
+              <td class="text-end" data-val="{{ r.delta|default:'' }}">
+                {% if r.delta is not None %}
+                  <strong class="{% if r.delta > 0 %}text-success{% elif r.delta < 0 %}text-danger{% else %}text-muted{% endif %}">
+                    {{ r.delta|floatformat:2 }} €
+                  </strong>
+                {% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
+              <td class="text-center">
+                {% if r.stato == 'nuovo' %}
+                  <span class="badge bg-success">{% trans "Nuovo" %}</span>
+                {% elif r.stato == 'sparito' %}
+                  <span class="badge bg-danger">{% trans "Sparito" %}</span>
+                {% elif r.stato == 'busta_non_presente' %}
+                  <span class="badge bg-secondary">{% trans "Busta non presente" %}</span>
+                {% elif r.stato == 'cambio_importo' %}
+                  <span class="badge bg-warning text-dark">{% trans "Modificato" %}</span>
+                {% else %}
+                  <span class="badge bg-light text-dark border">{% trans "Uguale" %}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-success mt-2">
+    ✅ {% trans "Nessun dipendente con voce 800 trovato per la selezione." %}
+  </div>
+  {% endif %}
+
+  {% endif %}{# risultati is not None #}
+</div>
+
+<script>
+(function () {
+  // ── filtro testo + stato ─────────────────────────────────────────
+  const tbody   = document.getElementById('acc-tbody');
+  const search  = document.getElementById('acc-search');
+  const statoSel = document.getElementById('acc-stato-filter');
+  const counter = document.getElementById('acc-count');
+  if (!tbody) return;
+
+  function applyFilters() {
+    const q     = (search ? search.value : '').toLowerCase();
+    const stato = (statoSel ? statoSel.value : '');
+    let visible = 0;
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const text  = tr.textContent.toLowerCase();
+      const trStato = tr.dataset.stato || '';
+      const show  = text.includes(q) && (!stato || trStato === stato);
+      tr.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    if (counter) counter.textContent = visible + ' righe';
+  }
+
+  if (search)   search.addEventListener('input', applyFilters);
+  if (statoSel) statoSel.addEventListener('change', applyFilters);
+
+  // ── ordinamento colonne ──────────────────────────────────────────
+  let sortCol = -1, sortAsc = true;
+
+  document.querySelectorAll('#acc-table th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col  = parseInt(th.dataset.col);
+      const type = th.dataset.type || 'str';
+      if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a, b) => {
+        const ca = a.cells[col], cb = b.cells[col];
+        if (!ca || !cb) return 0;
+        let va = (type === 'num') ? parseFloat(ca.dataset.val || ca.textContent) || 0
+                                  : ca.textContent.trim().toLowerCase();
+        let vb = (type === 'num') ? parseFloat(cb.dataset.val || cb.textContent) || 0
+                                  : cb.textContent.trim().toLowerCase();
+        if (va < vb) return sortAsc ? -1 : 1;
+        if (va > vb) return sortAsc ?  1 : -1;
+        return 0;
+      });
+      rows.forEach(r => tbody.appendChild(r));
+
+      document.querySelectorAll('#acc-table th.sortable').forEach(h => {
+        h.querySelector('.sort-ico').style.opacity = '0.5';
+      });
+      th.querySelector('.sort-ico').style.opacity = '1';
+    });
+  });
+})();
+</script>
+
+{% endblock %}
+

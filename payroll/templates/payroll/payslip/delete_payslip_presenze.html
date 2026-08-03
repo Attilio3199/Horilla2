@@ -1,0 +1,73 @@
+{% extends 'index.html' %}
+{% load i18n %}
+{% load static %}
+{% block content %}
+
+<section class="oh-wrapper oh-main__topbar">
+  <div class="oh-main__titlebar oh-main__titlebar--left">
+    <h1 class="oh-main__titlebar-title fw-bold">{% trans "Cancella Libro Presenze" %}</h1>
+  </div>
+</section>
+
+<div class="oh-wrapper mt-4">
+  <div class="oh-card" style="max-width:480px; margin:auto;">
+    <div class="oh-card__body">
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="oh-alert oh-alert--{{ message.tags }} mb-3">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <p class="mb-3 text-danger fw-bold">
+        {% trans "Attenzione: questa operazione elimina definitivamente tutte le righe del libro presenze per il mese/anno selezionato." %}
+      </p>
+
+      <form method="post" action="{% url 'delete-payslip-presenze' %}">
+        {% csrf_token %}
+
+        <div class="row mb-3">
+          <div class="col-sm-6">
+            <div class="oh-input-group">
+              <label class="oh-label" for="id_mese">{% trans "Mese" %} *</label>
+              <select class="oh-select w-100" id="id_mese" name="mese" required>
+                <option value="">-- {% trans "Seleziona" %} --</option>
+                {% for num, nome in months %}
+                  <option value="{{ num }}" {% if mese == num %}selected{% endif %}>{{ num|stringformat:"02d" }} – {{ nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="oh-input-group">
+              <label class="oh-label" for="id_anno">{% trans "Anno" %} *</label>
+              <input
+                type="number"
+                class="oh-input w-100"
+                id="id_anno"
+                name="anno"
+                min="2000"
+                max="2099"
+                value="{{ anno|default:current_year }}"
+                placeholder="es. 2026"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="oh-btn oh-btn--danger">
+            <ion-icon name="trash-outline" class="mr-1"></ion-icon>
+            {% trans "Elimina" %}
+          </button>
+          <a href="{% url 'view-payslip' %}" class="oh-btn oh-btn--light">{% trans "Annulla" %}</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
