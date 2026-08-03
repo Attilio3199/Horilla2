@@ -368,6 +368,15 @@ urlpatterns = [
         name="about-tab",
         kwargs={"model": Employee},
     ),
+    # Compatibility endpoint emitted by the generic profile component.  The
+    # employee profile uses the legacy About tab, whose canonical URL is the
+    # route above.
+    path(
+        "employeeprofileview-About/<int:pk>/",
+        views.about_tab,
+        name="employeeprofileview-about-legacy",
+        kwargs={"model": Employee},
+    ),
     path("document-tab/<int:pk>/", views.document_tab, name="document-tab"),
     path("document-category-tab/<int:pk>/<int:category_id>/", views.document_category_tab, name="document-category-tab"),
     path("get-document-subcategories/", views.get_document_subcategories, name="get-document-subcategories"),
