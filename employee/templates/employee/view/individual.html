@@ -310,7 +310,7 @@
 
 							<li class="oh-general__tab">
 								<a hx-get={% url 'about-tab' employee.id %} hx-target="#personal_target"
-									class="oh-general__tab-link" data-action="general-tab" role="button"
+									class="oh-general__tab-link oh-general__tab-link--active" data-action="general-tab" role="button"
 									data-target="#personal_target">{% trans "About" %}</a>
 							</li>
 
@@ -454,7 +454,8 @@
 							hx-get={% url 'bonus-points-tab' employee.id %} hx-target="#bonus_points_target" id="bonus-tab-button" hidden>
 						</button>
 
-						<div class="oh-general__tab-target oh-profile__info-tab mb-4" id="personal_target"> </div>
+						<div class="oh-general__tab-target oh-profile__info-tab mb-4" id="personal_target"
+							hx-get="{% url 'about-tab' employee.id %}" hx-trigger="load" hx-swap="innerHTML"> </div>
 
 						<div class="oh-general__tab-target oh-profile__info-tab mb-4 d-none" id="shift_target"></div>
 
