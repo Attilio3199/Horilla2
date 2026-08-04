@@ -67,6 +67,10 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       PORT: 8002
+      # Keep the web process below PostgreSQL's connection budget. Scheduler
+      # jobs execute in each Gunicorn worker, so the CPU-derived default (up
+      # to eight workers) is inappropriate for this single PostgreSQL service.
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
       MEDIA_ROOT: /app/media/
     depends_on:
       horilla2-db-init:

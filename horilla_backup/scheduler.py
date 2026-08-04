@@ -1,6 +1,6 @@
 import os
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from django.core.management import call_command
 
 from horilla import settings

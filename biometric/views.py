@@ -13,7 +13,7 @@ from threading import Event, Thread
 from urllib.parse import parse_qs, unquote
 
 import pytz
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from django.conf import settings
 from django.contrib import messages
 from django.db.models import Q

@@ -1,5 +1,107 @@
 {% load i18n %} {% load static %} {% load horillafilters %}
-<div class="row">
+<style>
+	/* The About tab is loaded through HTMX. Keep its essential layout local so
+	   cards and contract rows cannot collapse while global theme CSS is stale. */
+	.employee-about-layout {
+		display: flex !important;
+		flex-wrap: wrap !important;
+		margin-right: -12px;
+		margin-left: -12px;
+	}
+
+	.employee-about-layout > [class*="col-"] {
+		box-sizing: border-box;
+		padding-right: 12px;
+		padding-left: 12px;
+		width: 100%;
+	}
+
+	.employee-about-layout .oh-card {
+		padding: 1.25rem !important;
+		border: 1px solid #e7eaf0 !important;
+		border-radius: 12px !important;
+		background: #fff !important;
+		box-shadow: 0 1px 2px rgba(16, 24, 40, .03), 0 5px 14px rgba(16, 24, 40, .045) !important;
+	}
+
+	.employee-about-layout .oh-card--margin {
+		margin-top: 2rem !important;
+	}
+
+	.employee-about-layout .oh-card__header {
+		display: flex !important;
+		align-items: center !important;
+		margin-bottom: .85rem !important;
+	}
+
+	.employee-about-layout .oh-profile__card-info-list {
+		margin: 0;
+		padding-left: 0 !important;
+		list-style: none !important;
+	}
+
+	.employee-about-layout .oh-profile__card-info-item {
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: flex-start !important;
+		margin-bottom: 1.5rem !important;
+	}
+
+	.employee-about-layout .oh-profile__card-info-item:last-child {
+		margin-bottom: 0 !important;
+	}
+
+	.employee-about-layout .oh-profile__info-label {
+		display: flex !important;
+		align-items: center !important;
+		margin-bottom: .25rem !important;
+		color: #666;
+		font-size: .85rem;
+	}
+
+	.employee-about-layout .oh-profile__info-label > *:first-child {
+		margin-right: .35rem;
+	}
+
+	.employee-about-layout .oh-profile__info-value {
+		display: block !important;
+		font-size: .9rem;
+	}
+
+	.employee-about-layout .oh-sticky-table {
+		position: relative !important;
+		display: block !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		overflow: auto !important;
+		border: 1px solid #e7eaf0 !important;
+		border-radius: 10px;
+	}
+
+	.employee-about-layout .oh-sticky-table__table {
+		display: table !important;
+		position: relative !important;
+		width: 100% !important;
+		table-layout: fixed !important;
+	}
+
+	.employee-about-layout .oh-sticky-table__thead { display: table-header-group !important; }
+	.employee-about-layout .oh-sticky-table__tbody { display: table-row-group !important; }
+	.employee-about-layout .oh-sticky-table__tr { display: table-row !important; }
+	.employee-about-layout .oh-sticky-table__th,
+	.employee-about-layout .oh-sticky-table__sd,
+	.employee-about-layout .oh-sticky-table__td {
+		display: table-cell !important;
+		vertical-align: middle !important;
+		word-break: normal !important;
+	}
+
+	@media (min-width: 992px) {
+		.employee-about-layout > .col-lg-4 { flex: 0 0 33.333333%; width: 33.333333%; }
+		.employee-about-layout > .col-lg-8 { flex: 0 0 66.666667%; width: 66.666667%; }
+	}
+</style>
+<div class="row employee-about-layout">
 	<div class="col-sm-12 col-md-12 col-lg-4">
 		<div class="oh-card oh-card--margin">
 			<div class="oh-card__header">

@@ -3,7 +3,7 @@ import sys
 from datetime import timedelta
 
 import pytz
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from django.conf import settings
 from django.utils import timezone
 

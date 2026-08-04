@@ -3,7 +3,7 @@ import datetime as dt
 import sys
 from datetime import datetime, timedelta
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from dateutil.relativedelta import relativedelta
 
 today = datetime.now()

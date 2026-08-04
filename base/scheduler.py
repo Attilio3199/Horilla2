@@ -2,7 +2,7 @@ import calendar
 import sys
 from datetime import date, datetime, timedelta
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from django.urls import reverse
 
 from notifications.signals import notify

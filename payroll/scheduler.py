@@ -8,7 +8,7 @@ import json
 import sys
 from datetime import date, timedelta
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from dateutil.relativedelta import relativedelta
 
 from payroll.methods.methods import calculate_employer_contribution, save_payslip

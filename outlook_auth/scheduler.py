@@ -6,7 +6,7 @@ outlook_auth/scheduler.py
 import logging
 import sys
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 
 logger = logging.getLogger(__name__)
 

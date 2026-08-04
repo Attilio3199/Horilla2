@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from notifications.signals import notify

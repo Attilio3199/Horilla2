@@ -1,4 +1,14 @@
-{% extends 'index.html' %}{% load static %} {% block content %}
+{% extends 'index.html' %}
+{% load static %}
+
+{% block styles %}
+	{{ block.super }}
+	<link rel="stylesheet" href="{% static 'build/css/style.min.css' %}?v=20260803-3">
+	<link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260803-3">
+	<link rel="stylesheet" href="{% static 'css/modern-theme.css' %}?v=20260803-3">
+{% endblock styles %}
+
+{% block content %}
 {% load i18n %}
 {% load static %}
 {% load basefilters %}
@@ -9,6 +19,21 @@
 </script>
 
 <style>
+	#view-container .employee-profile-avatar,
+	#view-container .employee-profile-avatar .oh-profile__avatar,
+	#view-container .employee-profile-avatar .oh-profile-section__avatar {
+		width: 90px !important;
+		height: 90px !important;
+		min-width: 90px !important;
+		max-width: 90px !important;
+		min-height: 90px !important;
+		max-height: 90px !important;
+	}
+
+	#view-container .employee-profile-avatar .oh-profile-section__avatar {
+		object-fit: cover;
+	}
+
 	.oh-general__tab {
 		margin-bottom: 15px;
 	}
@@ -214,10 +239,13 @@
 		<div class="row">
 			<div class="col-12 col-sm-12 col-md-12 col-lg-4">
 				<div class="d-flex align-items-center">
-					<div class="oh-profile oh-profile--lg me-3">
+					<div class="oh-profile oh-profile--lg me-3 employee-profile-avatar">
 						<div class="oh-profile__avatar">
 							<img src="{{employee.get_avatar}}" class="oh-profile-section__avatar"
-								style="border-radius: 10%;" alt="Username" />
+								width="90" height="90" style="border-radius: 10%;" alt="Username" {% if employee.employee_profile %}
+								onmouseover="enlargeImager(this)
+								$('#enlargeImageContainer').addClass('enlarge-image-container');" onmouseout="hideEnlargeImager()
+								$('#enlargeImageContainer').removeClass('enlarge-image-container');" {% endif %} />
 						</div>
 						{% if "attendance"|app_installed %}
 							{% if employee.check_online %}
@@ -310,7 +338,7 @@
 
 							<li class="oh-general__tab">
 								<a hx-get={% url 'about-tab' employee.id %} hx-target="#personal_target"
-									class="oh-general__tab-link oh-general__tab-link--active" data-action="general-tab" role="button"
+									class="oh-general__tab-link" data-action="general-tab" role="button"
 									data-target="#personal_target">{% trans "About" %}</a>
 							</li>
 
@@ -454,8 +482,7 @@
 							hx-get={% url 'bonus-points-tab' employee.id %} hx-target="#bonus_points_target" id="bonus-tab-button" hidden>
 						</button>
 
-						<div class="oh-general__tab-target oh-profile__info-tab mb-4" id="personal_target"
-							hx-get="{% url 'about-tab' employee.id %}" hx-trigger="load" hx-swap="innerHTML"> </div>
+						<div class="oh-general__tab-target oh-profile__info-tab mb-4" id="personal_target"> </div>
 
 						<div class="oh-general__tab-target oh-profile__info-tab mb-4 d-none" id="shift_target"></div>
 

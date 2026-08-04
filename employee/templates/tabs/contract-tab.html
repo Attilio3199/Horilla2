@@ -1,35 +1,36 @@
 {% load i18n %}
-
+{% load employee_filter %}
 <style>
-    .height-adj{
-        height:420px;
-        overflow-y:auto
+    .contract-compact-table .oh-sticky-table__sd,
+    .contract-compact-table .oh-sticky-table__td,
+    .contract-compact-table .oh-sticky-table__th {
+        padding: 4px 6px !important;
+        font-size: 0.9rem;
+    }
+
+    .contract-compact-table .oh-btn-group .oh-btn {
+        padding: 2px 6px;
     }
 </style>
+
 {% if contracts %}
-    {% if perms.payroll.change_contract %}
-        <div class="d-flex justify-content-end mb-2">
-            <a class="oh-btn oh-btn--warning-outline" href="{% url 'variazione-oraria-create' employee.id %}?next={% url 'employee-view-individual' employee.id %}">
-                <ion-icon name="time-outline"></ion-icon>{% trans "Variazione Oraria" %}
-            </a>
-            <a class="oh-btn oh-btn--secondary-outline" href="{% url 'contract-level-create' employee.id %}?next={% url 'employee-view-individual' employee.id %}">
-                <ion-icon name="layers-outline"></ion-icon>{% trans "Livello" %}
-            </a>
-        </div>
-    {% endif %}
-    <div class="oh-sticky-table height-adj">
+    <div class="oh-sticky-table contract-compact-table">
         <div class="oh-sticky-table__table">
             <div class="oh-sticky-table__thead">
                 <div class="oh-sticky-table__tr">
-                <div class="oh-sticky-table__th">{% trans "Contract" %}</div>
-                <div class="oh-sticky-table__th">{% trans "Start Date" %}</div>
-                <div class="oh-sticky-table__th">{% trans "End Date" %}</div>
-                <div class="oh-sticky-table__th">{% trans "Wage Type" %}</div>
-                <div class="oh-sticky-table__th">{% trans "Basic Salary" %}</div>
-                <div class="oh-sticky-table__th">{% trans "Filing Status" %}</div>
-                <div class="oh-sticky-table__th">{% trans "Status" %}</div>
+                <div class="oh-sticky-table__th" style="width: 100px; min-width: 100px;">{% trans "Tipo Contratto" %}</div>
+                <div class="oh-sticky-table__th" style="width: 34px; min-width: 34px;">{% trans "Lun" %}</div>
+                <div class="oh-sticky-table__th" style="width: 34px; min-width: 34px;">{% trans "Mar" %}</div>
+                <div class="oh-sticky-table__th" style="width: 34px; min-width: 34px;">{% trans "Mer" %}</div>
+                <div class="oh-sticky-table__th" style="width: 34px; min-width: 34px;">{% trans "Gio" %}</div>
+                <div class="oh-sticky-table__th" style="width: 34px; min-width: 34px;">{% trans "Ven" %}</div>
+                <div class="oh-sticky-table__th" style="width: 34px; min-width: 34px;">{% trans "Sab" %}</div>
+                <div class="oh-sticky-table__th" style="width: 34px; min-width: 34px;">{% trans "Dom" %}</div>
+                <div class="oh-sticky-table__th" style="width: 45px; min-width: 45px;">{% trans "OreSett" %}</div>
+                <div class="oh-sticky-table__th" style="width: 78px; min-width: 78px;">{% trans "Data Inizio" %}</div>
+                <div class="oh-sticky-table__th" style="width: 78px; min-width: 78px;">{% trans "Data Fine" %}</div>
 				{% if perms.payroll.change_contract %}
-                    <div class="oh-sticky-table__th  oh-sticky-table__right"></div>
+                    <div class="oh-sticky-table__th  oh-sticky-table__right" style="width: 60px; min-width: 60px;"></div>
                 {% endif %}
                 </div>
             </div>
@@ -37,26 +38,30 @@
                 {% for contract in contracts %}
 
                 <div class="oh-sticky-table__tr" draggable="true" data-toggle="oh-modal-toggle" data-target = "#objectDetailsModal" hx-get="{% url 'single-contract-view' contract.id %}" hx-target = "#objectDetailsModalTarget">
-                    <div class="oh-sticky-table__sd  {% if contract.contract_status == "active" %} row-status--yellow {% elif contract.contract_status == 'draft' %} row-status--purple {% elif contract.contract_status == 'expired' %} row-status--red {% elif contract.contract_status == 'terminated' %} row-status--black {% endif %}">{{ contract.contract_name }}</div>
-                    <div class="oh-sticky-table__td dateformat_changer">{{ contract.contract_start_date}}</div>
-                    <div class="oh-sticky-table__td dateformat_changer">
-                        {% if contract.contract_end_date %}{{ contract.contract_end_date}}{% endif %}
+                    <div class="oh-sticky-table__sd  {% if contract.contract_status == "active" %} row-status--yellow {% elif contract.contract_status == 'draft' %} row-status--purple {% elif contract.contract_status == 'expired' %} row-status--red {% elif contract.contract_status == 'terminated' %} row-status--black {% endif %}" style="width: 100px; min-width: 100px;">
+                        {% if contract.tipo_contratto %}{{ contract.get_tipo_contratto_display }}{% else %}N/A{% endif %}
                     </div>
-                    <div class="oh-sticky-table__td">
-                        {{ contract.get_wage_type_display}}
+                    <div class="oh-sticky-table__td" style="width: 34px; min-width: 34px; text-align: right;">{{ contract.lun|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 34px; min-width: 34px; text-align: right;">{{ contract.mar|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 34px; min-width: 34px; text-align: right;">{{ contract.mer|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 34px; min-width: 34px; text-align: right;">{{ contract.gio|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 34px; min-width: 34px; text-align: right;">{{ contract.ven|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 34px; min-width: 34px; text-align: right;">{{ contract.sab|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 34px; min-width: 34px; text-align: right;">{{ contract.dom|italianfloat }}</div>
+                    <div class="oh-sticky-table__td" style="width: 45px; min-width: 45px; text-align: right; font-weight: bold;">
+                        {{ contract.lun|add:contract.mar|add:contract.mer|add:contract.gio|add:contract.ven|add:contract.sab|add:contract.dom|italianfloat }}
                     </div>
-                    <div class="oh-sticky-table__td">{{ contract.wage}}</div>
-                    <div class="oh-sticky-table__td">{{ contract.filing_status}}</div>
-                    <div class="oh-sticky-table__td">
-                        {{ contract.get_contract_status_display}}
+                    <div class="oh-sticky-table__td" style="width: 78px; min-width: 78px;">{{ contract.contract_start_date|date:"d/m/Y" }}</div>
+                    <div class="oh-sticky-table__td" style="width: 78px; min-width: 78px;">
+                        {% if contract.contract_end_date %}{{ contract.contract_end_date|date:"d/m/Y" }}{% else %}N/A{% endif %}
                     </div>
 					{% if perms.payroll.change_contract %}
-                        <div class="oh-sticky-table__td  oh-sticky-table__right">
+						<div class="oh-sticky-table__td  oh-sticky-table__right" style="width: 60px; min-width: 60px;">
                             <div class="oh-btn-group">
                             <a
                             onclick="event.stopPropagation()"
                                 class="oh-btn oh-btn--light-bkg w-100"
-                                href="{% url 'update-contract' contract.id %}"
+                                href="{% url 'update-contract' contract.id %}?next={% url 'employee-view-individual' employee.id %}"
                                 title="{% trans 'Update' %}"
                             >
                                 <ion-icon
@@ -64,12 +69,12 @@
                                 role="img"
                                 class="md hydrated"
                                 style="color: blue"
-                                aria-label="{% trans 'create outline' %}"
+                                aria-label="create outline"
                                 ></ion-icon>
                             </a>
                             <a
                                 onclick = "event.preventDefault();event.stopPropagation();"
-                                class="oh-btn oh-btn--danger w-100"
+                                class="oh-btn oh-btn--danger-outline oh-btn--light-bkg w-100"
                                 hx-confirm="{% trans 'Do you want to delete this Contract?' %}"
                                 hx-post="{% url 'delete-contract-modal' contract.id %}?{{pd}}"
                                 hx-target="#personal_target"
@@ -79,7 +84,7 @@
                                 name="trash-outline"
                                 role="img"
                                 class="md hydrated"
-                                aria-label="{% trans 'trash outline' %}"
+                                aria-label="trash outline"
                                 ></ion-icon>
                             </a>
                             </div>
@@ -88,39 +93,16 @@
                 </div>
                 {% endfor %}
             </div>
+        </div>
     </div>
 {% else %}
-    <div class="d-flex justify-content-center align-items-center" style="height:40vh">
-        <h5 class="oh-404__subtitle">{% trans "There are no contracts at the moment." %}</h5>
+    <div class="d-flex flex-column justify-content-center align-items-center" style="height:40vh">
+        <h5 class="oh-404__subtitle mb-3">{% trans "There are no contracts at the moment." %}</h5>
+        {% if perms.payroll.add_contract %}
+        <a href="{% url 'contract-create' %}?employee_id={{employee.id}}&next={% url 'employee-view-individual' employee.id %}" class="oh-btn oh-btn--info">
+            <ion-icon name="add-outline"></ion-icon>
+            {% trans "Add Contract" %}
+        </a>
+        {% endif %}
     </div>
 {% endif %}
-
-<div class="mt-4">
-    <h6 class="fw-bold">{% trans "Variazioni Orarie" %}</h6>
-    {% if variazioni_orarie %}
-        <div class="oh-sticky-table">
-            <div class="oh-sticky-table__table">
-                <div class="oh-sticky-table__thead"><div class="oh-sticky-table__tr">
-                    <div class="oh-sticky-table__th">{% trans "Start Date" %}</div>
-                    <div class="oh-sticky-table__th">{% trans "End Date" %}</div>
-                    <div class="oh-sticky-table__th">{% trans "Weekly Hours" %}</div>
-                    {% if perms.payroll.change_contract %}<div class="oh-sticky-table__th"></div>{% endif %}
-                </div></div>
-                <div class="oh-sticky-table__tbody">
-                    {% for variation in variazioni_orarie %}
-                        <div class="oh-sticky-table__tr">
-                            <div class="oh-sticky-table__td dateformat_changer">{{ variation.contract_start_date }}</div>
-                            <div class="oh-sticky-table__td dateformat_changer">{{ variation.contract_end_date|default:"—" }}</div>
-                            <div class="oh-sticky-table__td">{{ variation.lun|default:0 }} / {{ variation.mar|default:0 }} / {{ variation.mer|default:0 }} / {{ variation.gio|default:0 }} / {{ variation.ven|default:0 }} / {{ variation.sab|default:0 }} / {{ variation.dom|default:0 }}</div>
-                            {% if perms.payroll.change_contract %}<div class="oh-sticky-table__td"><div class="oh-btn-group"><a class="oh-btn oh-btn--light-bkg" href="{% url 'variazione-oraria-create' employee.id %}?variazione_id={{ variation.id }}&next={% url 'employee-view-individual' employee.id %}" title="{% trans 'Update' %}"><ion-icon name="create-outline"></ion-icon></a><form method="post" action="{% url 'variazione-oraria-delete' variation.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'employee-view-individual' employee.id %}"><button class="oh-btn oh-btn--danger-outline" title="{% trans 'Delete' %}"><ion-icon name="trash-outline"></ion-icon></button></form></div></div>{% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    {% else %}
-        <span class="oh-text--light">{% trans "No hourly variations recorded." %}</span>
-    {% endif %}
-</div>
-
-{% include "tabs/contract-level-tab.html" %}

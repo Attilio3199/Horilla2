@@ -1,37 +1,64 @@
 {% load i18n %}
-<div class="mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h6 class="fw-bold mb-0">{% trans "Livelli contrattuali" %}</h6>
-        {% if perms.payroll.change_contract and not contracts %}
-            <a class="oh-btn oh-btn--secondary-outline" href="{% url 'contract-level-create' employee.id %}?next={% url 'employee-view-individual' employee.id %}">
-                <ion-icon name="add-outline"></ion-icon>{% trans "Livello" %}
-            </a>
-        {% endif %}
-    </div>
-    {% if contract_levels %}
-        <div class="oh-sticky-table">
-            <div class="oh-sticky-table__table">
-                <div class="oh-sticky-table__thead"><div class="oh-sticky-table__tr">
-                    <div class="oh-sticky-table__th">{% trans "Badge ID" %}</div>
-                    <div class="oh-sticky-table__th">{% trans "Livello" %}</div>
-                    <div class="oh-sticky-table__th">{% trans "Data decorrenza" %}</div>
+
+<style>
+    .contract-level-compact-table .oh-sticky-table__sd,
+    .contract-level-compact-table .oh-sticky-table__td,
+    .contract-level-compact-table .oh-sticky-table__th {
+        padding: 4px 6px !important;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+</style>
+
+{% if contract_levels %}
+    <div class="oh-sticky-table contract-level-compact-table">
+        <div class="oh-sticky-table__table">
+            <div class="oh-sticky-table__thead">
+                <div class="oh-sticky-table__tr">
+                    <div class="oh-sticky-table__th" style="width: 100px; min-width: 100px;">{% trans "Badge ID" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 80px; min-width: 80px;">{% trans "Livello" %}</div>
+                    <div class="oh-sticky-table__th" style="width: 110px; min-width: 110px;">{% trans "Data decorrenza" %}</div>
                     <div class="oh-sticky-table__th">{% trans "Note" %}</div>
-                    {% if perms.payroll.change_contract %}<div class="oh-sticky-table__th"></div>{% endif %}
-                </div></div>
-                <div class="oh-sticky-table__tbody">
-                    {% for level in contract_levels %}
-                        <div class="oh-sticky-table__tr">
-                            <div class="oh-sticky-table__td">{{ level.badge_id|default:"—" }}</div>
-                            <div class="oh-sticky-table__td">{{ level.lvl }}</div>
-                            <div class="oh-sticky-table__td dateformat_changer">{{ level.data_decorrenza }}</div>
-                            <div class="oh-sticky-table__td">{{ level.note|default:"—" }}</div>
-                            {% if perms.payroll.change_contract %}<div class="oh-sticky-table__td"><div class="oh-btn-group"><a class="oh-btn oh-btn--light-bkg" href="{% url 'contract-level-create' employee.id %}?level_id={{ level.id }}&next={% url 'employee-view-individual' employee.id %}" title="{% trans 'Update' %}"><ion-icon name="create-outline"></ion-icon></a><form method="post" action="{% url 'contract-level-delete' level.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'employee-view-individual' employee.id %}"><button class="oh-btn oh-btn--danger-outline" title="{% trans 'Delete' %}"><ion-icon name="trash-outline"></ion-icon></button></form></div></div>{% endif %}
-                        </div>
-                    {% endfor %}
+                    {% if perms.payroll.change_contract %}
+                    <div class="oh-sticky-table__th oh-sticky-table__right" style="width: 80px; min-width: 80px;"></div>
+                    {% endif %}
                 </div>
             </div>
+            <div class="oh-sticky-table__tbody">
+                {% for contract_level in contract_levels %}
+                <div class="oh-sticky-table__tr">
+                    <div class="oh-sticky-table__td" style="width: 100px; min-width: 100px;">{{ contract_level.badge_id|default:"-" }}</div>
+                    <div class="oh-sticky-table__td" style="width: 80px; min-width: 80px;">{{ contract_level.lvl }}</div>
+                    <div class="oh-sticky-table__td" style="width: 110px; min-width: 110px;">{{ contract_level.data_decorrenza|date:"d/m/Y" }}</div>
+                    <div class="oh-sticky-table__td">{{ contract_level.note|default:"-" }}</div>
+                    {% if perms.payroll.change_contract %}
+                    <div class="oh-sticky-table__td oh-sticky-table__right" style="width: 80px; min-width: 80px;">
+                        <div class="oh-btn-group">
+                            <a
+                                onclick="event.stopPropagation()"
+                                class="oh-btn oh-btn--light-bkg w-100"
+                                href="{% url 'contract-level-create' employee.id %}?level_id={{ contract_level.id }}&next={% url 'employee-view-individual' employee.id %}"
+                                title="{% trans 'Update' %}"
+                            >
+                                <ion-icon name="create-outline" role="img" class="md hydrated" style="color: blue"></ion-icon>
+                            </a>
+                            <form method="post" action="{% url 'contract-level-delete' contract_level.id %}" onsubmit="event.stopPropagation(); return confirm('{% trans 'Do you want to delete this Livello?' %}');">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{% url 'employee-view-individual' employee.id %}">
+                                <button type="submit" class="oh-btn oh-btn--danger-outline oh-btn--light-bkg w-100" title="{% trans 'Delete' %}">
+                                    <ion-icon name="trash-outline" role="img" class="md hydrated" aria-label="trash outline"></ion-icon>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
         </div>
-    {% else %}
-        <span class="oh-text--light">{% trans "Nessun livello registrato." %}</span>
-    {% endif %}
-</div>
+    </div>
+{% else %}
+    <div class="d-flex flex-column justify-content-center align-items-center" style="height: 30vh;">
+        <h5 class="oh-404__subtitle mb-3">{% trans "Nessun livello registrato." %}</h5>
+    </div>
+{% endif %}

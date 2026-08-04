@@ -1,7 +1,7 @@
 import sys
 from datetime import date, datetime, time, timedelta
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 
 
 def update_experience():

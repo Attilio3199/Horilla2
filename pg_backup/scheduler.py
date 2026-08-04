@@ -46,7 +46,7 @@ import subprocess
 from pathlib import Path
 
 import environ
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from django.conf import settings
 
 # === Logging Configuration ===

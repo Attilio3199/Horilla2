@@ -314,7 +314,11 @@ def profile_edit_access(request, emp_id):
 )
 def employee_view_individual(request, obj_id, **kwargs):
     """
-    This method is used to view profile of an employee.
+    Bootstrap the Horilla2 employee profile on a direct page load.
+
+    The employee directory loads ``profile-new`` through HTMX and then pushes
+    this URL into browser history.  Rendering the old standalone template here
+    made a reload switch back to the legacy interface.
     """
     try:
         employee = Employee.objects.get(id=obj_id)
@@ -333,101 +337,10 @@ def employee_view_individual(request, obj_id, **kwargs):
         except Exception as e:
             return render(request, "404.html", status=404)
 
-    employee_leaves = (
-        employee.available_leave.all() if apps.is_installed("leave") else None
-    )
-    enabled_block_unblock = (
-        AccountBlockUnblock.objects.exists()
-        and AccountBlockUnblock.objects.first().is_enabled
-    )
-    filtered_employee_ids = request.session.get("filtered_employees", [])
-    filtered_employees = Employee.objects.filter(id__in=filtered_employee_ids)
-    request_ids_str = json.dumps(
-        [
-            instance.id
-            for instance in paginator_qry(
-                filtered_employees, request.GET.get("page")
-            ).object_list
-        ]
-    )
-    requests_ids = (
-        ast.literal_eval(request_ids_str)
-        if isinstance(request_ids_str, str)
-        else request_ids_str
-    )
-    previous_id = next_id = None
-    if employee.id in requests_ids:
-        index = requests_ids.index(employee.id)
-        previous_id = requests_ids[index - 1] if index else None
-        next_id = requests_ids[index + 1] if index + 1 < len(requests_ids) else None
-
-    context = {
-        "employee": employee,
-        "previous": previous_id,
-        "next": next_id,
-        "requests_ids": requests_ids,
-        "current_date": date.today(),
-        "leave_request_ids": json.dumps([]),
-        "enabled_block_unblock": enabled_block_unblock,
-        "document_categories": DocumentCategory.objects.all(),
-    }
-    if request.user.employee_get == employee:
-        context["user_leaves"] = employee_leaves
-    else:
-        context["employee_leaves"] = employee_leaves
-
-    # request_ids_str = json.dumps(
-    #     [
-    #         instance.id
-    #         for instance in paginator_qry(
-    #             filtered_employees, request.GET.get("page")
-    #         ).object_list
-    #     ]
-    # )
-
-    # # Convert the string to an actual list of integers
-    # requests_ids = (
-    #     ast.literal_eval(request_ids_str)
-    #     if isinstance(request_ids_str, str)
-    #     else request_ids_str
-    # )
-
-    # employee_id = employee.id
-    # previous_id = None
-    # next_id = None
-
-    # for index, req_id in enumerate(requests_ids):
-    #     if req_id == employee_id:
-
-    #         if index == len(requests_ids) - 1:
-    #             next_id = None
-    #         else:
-    #             next_id = requests_ids[index + 1]
-    #         if index == 0:
-    #             previous_id = None
-    #         else:
-    #             previous_id = requests_ids[index - 1]
-    #         break
-
-    # context = {
-    #     "employee": employee,
-    #     "previous": previous_id,
-    #     "next": next_id,
-    #     "requests_ids": requests_ids,
-    #     "current_date": date.today(),
-    #     "leave_request_ids": json.dumps([]),
-    #     "enabled_block_unblock": enabled_block_unblock,
-    # }
-    # # if the requesting user opens own data
-    # if request.user.employee_get == employee:
-    #     context["user_leaves"] = employee_leaves
-    # else:
-    #     context["employee_leaves"] = employee_leaves
-
     return render(
         request,
-        "employee/view/individual.html",
-        context,
+        "employee/view/individual_shell.html",
+        {"employee_id": employee.id},
     )
 
 
@@ -438,17 +351,27 @@ def about_tab(request, pk, **kwargs):
     This method is used to view profile of an employee.
     """
     employee = Employee.objects.get(id=pk)
-    contracts = employee.contract_set.all() if apps.is_installed("payroll") else None
+    # Keep the detail page deterministic and aligned with the original Horilla
+    # view: the most recent contractual entries must be shown first.
+    contracts = (
+        employee.contract_set.all().order_by("-contract_start_date")
+        if apps.is_installed("payroll")
+        else None
+    )
     variazioni_orarie = []
     if apps.is_installed("payroll"):
         from payroll.models.models import ContractLevel, VarzioneOraria
 
-        variazioni_orarie = VarzioneOraria.objects.entire().filter(
-            employee_id=employee
-        ).order_by("-contract_start_date")
-        contract_levels = ContractLevel.objects.entire().filter(
-            employee_id=employee
-        ).order_by("-data_decorrenza", "-id")
+        variazioni_orarie = list(
+            VarzioneOraria.objects.entire()
+            .filter(employee_id_id=employee.id)
+            .order_by("-contract_start_date")
+        )
+        contract_levels = list(
+            ContractLevel.objects.entire()
+            .filter(employee_id_id=employee.id)
+            .order_by("-data_decorrenza", "-id")
+        )
     else:
         contract_levels = None
     employee_leaves = (

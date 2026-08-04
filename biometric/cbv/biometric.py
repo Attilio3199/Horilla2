@@ -5,7 +5,7 @@ This page handles the cbv methods for Biometric app
 from typing import Any
 from venv import logger
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from horilla.scheduler import BackgroundScheduler
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponse
