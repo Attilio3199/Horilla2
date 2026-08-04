@@ -2,6 +2,19 @@
 <style>
 	/* The About tab is loaded through HTMX. Keep its essential layout local so
 	   cards and contract rows cannot collapse while global theme CSS is stale. */
+	/* Horilla2 renders About inside the generic profile tab panel.  This panel
+	   must expand with the cards below it instead of becoming a nested scroll
+	   area.  ``personal_target`` keeps the same behaviour for the legacy entry
+	   point that still uses this partial. */
+	#profileTab1,
+	#personal_target,
+	.employee-about-layout {
+		height: auto !important;
+		min-height: 0 !important;
+		max-height: none !important;
+		overflow: visible !important;
+	}
+
 	.employee-about-layout {
 		display: flex !important;
 		flex-wrap: wrap !important;

@@ -84,6 +84,11 @@ urlpatterns = [
         employee_views.about_tab,
         name="employeeprofileview-about-legacy",
     ),
+    path(
+        "employeeprofileview-Documents/<int:pk>/",
+        employee_views.document_tab,
+        name="employeeprofileview-documents-legacy",
+    ),
     path("sw.js", service_worker, name="service-worker"),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),

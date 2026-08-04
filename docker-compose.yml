@@ -78,6 +78,7 @@ services:
     volumes:
       - ./horilla:/app/horilla
       - /app/horilla/locale
+      - ./horilla_theme:/app/horilla_theme
       - ./media:/app/media
 
 volumes:
