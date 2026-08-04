@@ -4,12 +4,6 @@
 {% block content %}
 {% include "generic/components.html" %}
 
-{#
-  The employee list opens the Horilla2 profile through HTMX and pushes the
-  canonical /employee/employee-view/<id>/ URL into the browser history.  A
-  normal browser refresh must bootstrap that same profile instead of rendering
-  the retired standalone detail template.
-#}
 <div
   id="listContainer"
   class="oh-wrapper"

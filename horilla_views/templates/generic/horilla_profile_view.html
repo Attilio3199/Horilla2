@@ -343,7 +343,11 @@
                                 onclick="switchGeneralTab(event)"
                                 data-target="#profileTab{{forloop.counter}}"
                                 hx-get="{{tab.url|format:instance}}"
-                                hx-trigger="revealed"
+                                {% if forloop.counter == 1 and not active_target %}
+                                    hx-trigger="load"
+                                {% else %}
+                                    hx-trigger="click once"
+                                {% endif %}
                                 hx-target="#profileTab{{forloop.counter}}"
                             >{{ tab.title }}</a>
                         </li>

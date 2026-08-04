@@ -73,7 +73,13 @@
 		display: block !important;
 		width: 100% !important;
 		max-width: 100% !important;
-		overflow: auto !important;
+		/* Let the About tab grow with all its rows.  Only horizontal overflow
+		   remains scrollable for wide tables; vertical scrolling belongs to the
+		   page, not to this nested container. */
+		height: auto !important;
+		max-height: none !important;
+		overflow-x: auto !important;
+		overflow-y: visible !important;
 		border: 1px solid #e7eaf0 !important;
 		border-radius: 10px;
 	}
