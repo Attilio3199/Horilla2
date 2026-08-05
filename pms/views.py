@@ -3171,7 +3171,7 @@ def anonymous_feedback_add(request):
             if feedback.based_on == "employee":
                 try:
                     notify.send(
-                        HorillaUser.objects.filter(username="Horilla Bot").first(),
+                        HorillaUser.objects.filter(username="Godzilla Bot").first(),
                         recipient=feedback.employee_id.employee_user_id,
                         verb="You received an anonymous feedback!",
                         verb_ar="لقد تلقيت تقييمًا مجهولًا!",

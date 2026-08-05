@@ -928,7 +928,7 @@ class EmployeeShiftSchedule(HorillaModel):
         blank=True,
         verbose_name=_("Automatic Check Out Time"),
         help_text=_(
-            "Time at which the horilla will automatically check out the employee attendance if they forget."
+            "Time at which Godzilla will automatically check out the employee attendance if they forget."
         ),
     )
 

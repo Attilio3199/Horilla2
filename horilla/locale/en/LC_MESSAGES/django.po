@@ -70,7 +70,7 @@ msgstr ""
 msgid "Default Accessibility"
 msgstr ""
 
-msgid "Limit default view access to horilla feature"
+msgid "Limit default view access to Godzilla feature"
 msgstr ""
 
 msgid "Actions"
@@ -3999,7 +3999,7 @@ msgstr ""
 msgid "Mail Server"
 msgstr ""
 
-msgid "Configure an outgoing mail server so Horilla can send emails."
+msgid "Configure an outgoing mail server so Godzilla can send emails."
 msgstr ""
 
 #, fuzzy
@@ -4335,7 +4335,7 @@ msgid "Enable this to trigger automatic check out."
 msgstr ""
 
 msgid ""
-"Time at which the horilla will automatically check out the employee "
+"Time at which Godzilla will automatically check out the employee "
 "attendance if they forget."
 msgstr ""
 
@@ -5476,7 +5476,7 @@ msgstr ""
 
 #, fuzzy
 #| msgid "horilla-theme"
-msgid "Horilla"
+msgid "Godzilla"
 msgstr "Theme Customization"
 
 #, fuzzy
@@ -6114,7 +6114,7 @@ msgstr ""
 msgid "HR setup checklist"
 msgstr ""
 
-msgid "Get started with Horilla HR"
+msgid "Get started with Godzilla HR"
 msgstr ""
 
 #, python-format
@@ -7653,7 +7653,7 @@ msgstr ""
 msgid "{} not found."
 msgstr ""
 
-msgid "Test mail from Horilla"
+msgid "Test mail from Godzilla"
 msgstr ""
 
 msgid "Something went wrong :"
@@ -11357,7 +11357,7 @@ msgstr ""
 
 #, fuzzy
 #| msgid "horilla-theme"
-msgid "Horilla Auth"
+msgid "Godzilla Auth"
 msgstr "Theme Customization"
 
 msgid "Users"
@@ -11941,7 +11941,7 @@ msgstr "Configuration"
 msgid "Enable Google meet"
 msgstr ""
 
-msgid "Enable this to integrate Google meet to Horilla."
+msgid "Enable this to integrate Google meet to Godzilla."
 msgstr ""
 
 #, fuzzy
@@ -13508,7 +13508,7 @@ msgstr ""
 msgid "Please login to access the dashboard."
 msgstr ""
 
-msgid "e.g. adam.luis@horilla.com"
+msgid "e.g. adam.luis@godzilla.com"
 msgstr ""
 
 msgid "Sign In"
@@ -14372,7 +14372,7 @@ msgstr "Shift Requests"
 msgid "Enable Linkedin"
 msgstr "Recruitment"
 
-msgid "Enable this to integrate linkedin to Horilla."
+msgid "Enable this to integrate linkedin to Godzilla."
 msgstr ""
 
 msgid "Prefix added to every auto-generated employee badge ID (e.g. PEP0001)."
@@ -22097,7 +22097,7 @@ msgstr ""
 
 #, fuzzy
 #| msgid "horilla-theme"
-msgid "Horilla HRMS"
+msgid "Godzilla HRMS"
 msgstr "Theme Customization"
 
 msgid "Sign Up"
@@ -22110,10 +22110,10 @@ msgid "Go To Home"
 msgstr ""
 
 msgid ""
-"Authenticate with your password to initialize the Horilla HRMS database."
+"Authenticate with your password to initialize the Godzilla HRMS database."
 msgstr ""
 
-msgid "Please sign up to access the Horilla HRMS."
+msgid "Please sign up to access the Godzilla HRMS."
 msgstr ""
 
 msgid "e.g. Adam"
@@ -22653,7 +22653,7 @@ msgstr "Configuration"
 msgid "Enable Whatsapp"
 msgstr ""
 
-msgid "Enable this to integrate Whatsapp to Horilla."
+msgid "Enable this to integrate Whatsapp to Godzilla."
 msgstr ""
 
 msgid "Create Message Template and Flows"
@@ -23201,7 +23201,7 @@ msgstr ""
 
 #, fuzzy
 #~| msgid "recruitment"
-#~ msgid "Horilla - Open Recruitments"
+#~ msgid "Godzilla - Open Recruitments"
 #~ msgstr "Recruitment"
 
 #, fuzzy

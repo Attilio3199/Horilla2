@@ -54,7 +54,7 @@
                         <!-- Right side: Details -->
                         <div class="md:w-1/2 md:pl-10 md:text-left mt-2">
                             <h5 class="text-xs font-semibold">
-                                {{ history.updated_by.get_full_name|default:"Horilla Bot" }}
+                                {{ history.updated_by.get_full_name|default:"Godzilla Bot" }}
                             </h5>
                             {% if history.pair.0.history_title %}
                                 <p class="text-xs text-[#777777] mb-2">{{ history.pair.0.history_title }}</p>
@@ -161,7 +161,7 @@
                                 >
                             {% else %}
                                 <img
-                                    src="https://ui-avatars.com/api/?name=Horilla+Bot&background=random"
+                                    src="https://ui-avatars.com/api/?name=Godzilla+Bot&background=random"
                                     alt="{% trans 'user' %}"
                                     class="w-full h-full object-cover rounded-full"
                                 >
@@ -171,7 +171,7 @@
                         <!-- Right side: Details -->
                         <div class="md:w-1/2 md:pl-10 md:text-left mt-2">
                             <h5 class="text-xs font-semibold">
-                                {% if entry.actor.employee_get %}{{ entry.actor.employee_get.get_full_name }}{% else %}{% trans "Horilla Bot" %}{% endif %}
+                                {% if entry.actor.employee_get %}{{ entry.actor.employee_get.get_full_name }}{% else %}{% trans "Godzilla Bot" %}{% endif %}
                             </h5>
 
                             <div class="bg-white p-3 rounded-md border border-gray-200 shadow-sm">

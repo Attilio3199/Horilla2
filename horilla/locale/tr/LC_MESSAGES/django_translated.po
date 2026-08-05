@@ -1003,7 +1003,7 @@ msgstr "Varsayılan Erişilebilirlik"
 
 #: accessibility/templates/accessibility/accessibility.html:11
 #: horilla_theme/templates/accessibility/accessibility.html:13
-msgid "Limit default view access to horilla feature"
+msgid "Limit default view access to Godzilla feature"
 msgstr ""
 
 #: accessibility/templates/accessibility/accessibility.html:31
@@ -12643,7 +12643,7 @@ msgstr ""
 
 #: base/models.py:863
 msgid ""
-"Time at which the horilla will automatically check out the employee "
+"Time at which Godzilla will automatically check out the employee "
 "attendance if they forget."
 msgstr ""
 
@@ -16061,7 +16061,7 @@ msgid "{} not found."
 msgstr ""
 
 #: base/views.py:1586
-msgid "Test mail from Horilla"
+msgid "Test mail from Godzilla"
 msgstr ""
 
 #: base/views.py:1642
@@ -20874,7 +20874,7 @@ msgid "Why this change?"
 msgstr ""
 
 #: horilla_auth/apps.py:8
-msgid "Horilla Auth"
+msgid "Godzilla Auth"
 msgstr ""
 
 #: horilla_auth/models.py:12
@@ -21027,7 +21027,7 @@ msgid "Enable Google meet"
 msgstr ""
 
 #: horilla_meet/templates/gmeet_credentials/gmeet_credential_section_view.html:15
-msgid "Enable this to integrate Google meet to Horilla."
+msgid "Enable this to integrate Google meet to Godzilla."
 msgstr ""
 
 #: horilla_theme/apps.py:14 horilla_theme/templates/settings.html:597
@@ -24328,7 +24328,7 @@ msgid "Enable Linkedin"
 msgstr ""
 
 #: horilla_theme/templates/settings/linkedin/linkedin_setting_section.html:19
-msgid "Enable this to integrate linkedin to Horilla."
+msgid "Enable this to integrate linkedin to Godzilla."
 msgstr ""
 
 #: horilla_theme/templates/skill_zone/skill_zone_list.html:67
@@ -31544,7 +31544,7 @@ msgstr ""
 
 #: templates/initialize_database/horilla_user.html:81
 msgid ""
-"Authenticate with your password to initialize the Horilla HRMS database."
+"Authenticate with your password to initialize the Godzilla HRMS database."
 msgstr ""
 
 #: templates/initialize_database/horilla_user_signup.html:28
@@ -31552,7 +31552,7 @@ msgid "Sign Up"
 msgstr ""
 
 #: templates/initialize_database/horilla_user_signup.html:31
-msgid "Please sign up to access the Horilla HRMS."
+msgid "Please sign up to access the Godzilla HRMS."
 msgstr ""
 
 #: templates/initialize_database/horilla_user_signup.html:118
@@ -31651,7 +31651,7 @@ msgid "Enable Whatsapp"
 msgstr ""
 
 #: whatsapp/templates/whatsapp/credentials_view.html:16
-msgid "Enable this to integrate Whatsapp to Horilla."
+msgid "Enable this to integrate Whatsapp to Godzilla."
 msgstr ""
 
 #: whatsapp/templates/whatsapp/option_buttons.html:9

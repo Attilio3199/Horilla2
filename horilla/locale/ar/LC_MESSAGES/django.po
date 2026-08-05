@@ -66,7 +66,7 @@ msgstr "الصلاحيات"
 msgid "Default Accessibility"
 msgstr "إمكانية الوصول الافتراضية"
 
-msgid "Limit default view access to horilla feature"
+msgid "Limit default view access to Godzilla feature"
 msgstr "تقييد صلاحية الوصول الافتراضي لميزة البرنامج"
 
 msgid "Actions"
@@ -2989,7 +2989,7 @@ msgid "Enable this to trigger automatic check out."
 msgstr "تفعيل هذا لتنشيط التوقيت الخارج التلقائي تلقائياً."
 
 msgid ""
-"Time at which the horilla will automatically check out the employee "
+"Time at which Godzilla will automatically check out the employee "
 "attendance if they forget."
 msgstr "الوقت الذي سيُخرج فيه النظام الموظف تلقائياً في حالة نسيان تسجيل الخروج."
 
@@ -4983,7 +4983,7 @@ msgstr "تم حذف {} بنجاح."
 msgid "{} not found."
 msgstr "{} غير موجود."
 
-msgid "Test mail from Horilla"
+msgid "Test mail from Godzilla"
 msgstr "بريد تجريبي من هوريلا"
 
 msgid "Something went wrong :"
@@ -13822,7 +13822,7 @@ msgid "Go To Home"
 msgstr "الانتقال إلى الصفحة الرئيسية"
 
 msgid ""
-"Authenticate with your password to initialize the Horilla HRMS database."
+"Authenticate with your password to initialize the Godzilla HRMS database."
 msgstr ""
 "قم بالمصادقة باستخدام كلمة المرور الخاصة بك لتهيئة قاعدة بيانات البرنامج "
 "للموارد البشرية."
@@ -13830,7 +13830,7 @@ msgstr ""
 msgid "Sign Up"
 msgstr "إنشاء حساب جديد"
 
-msgid "Please sign up to access the Horilla HRMS."
+msgid "Please sign up to access the Godzilla HRMS."
 msgstr "يرجى إنشاء حساب للوصول إلى البرنامج للموارد البشرية."
 
 msgid "Secure Sign-up"
@@ -14448,7 +14448,7 @@ msgstr "رقم الهاتف"
 #~ msgid "File(s) uploaded successfully."
 #~ msgstr "تم رفع الملف (الملفات) بنجاح."
 
-#~ msgid "Horilla Auth"
+#~ msgid "Godzilla Auth"
 #~ msgstr "هوريلا للمصادقة"
 
 #~ msgid "Users"
@@ -14466,7 +14466,7 @@ msgstr "رقم الهاتف"
 #~ msgid "Enable Google meet"
 #~ msgstr "تفعيل Google meet"
 
-#~ msgid "Enable this to integrate Google meet to Horilla."
+#~ msgid "Enable this to integrate Google meet to Godzilla."
 #~ msgstr "تفعيل هذا للتكامل مع Google meet في البرنامج."
 
 #~ msgid "Activities:"
@@ -14757,7 +14757,7 @@ msgstr "رقم الهاتف"
 #~ msgid "Enable Linkedin"
 #~ msgstr "تفعيل لينكيدان"
 
-#~ msgid "Enable this to integrate linkedin to Horilla."
+#~ msgid "Enable this to integrate linkedin to Godzilla."
 #~ msgstr "تفعيل هذا للتكامل مع لينكيدان في البرنامج."
 
 #~ msgid "Do you want to unarchive this skill zone?"
@@ -14826,7 +14826,7 @@ msgstr "رقم الهاتف"
 #~ msgid "Enable Whatsapp"
 #~ msgstr "تفعيل WhatsApp"
 
-#~ msgid "Enable this to integrate Whatsapp to Horilla."
+#~ msgid "Enable this to integrate Whatsapp to Godzilla."
 #~ msgstr "تفعيل هذا للتكامل مع WhatsApp في البرنامج."
 
 #~ msgid "Do you want to create Templates and Flows in whatsapp manager?"
@@ -14923,10 +14923,10 @@ msgstr "رقم الهاتف"
 #~ msgid "There is no department managers at this moment."
 #~ msgstr "لا توجد مدراء أقسام في الوقت الحالي."
 
-#~ msgid "LDAP to Horilla Employee Field Mapping"
+#~ msgid "LDAP to Godzilla Employee Field Mapping"
 #~ msgstr "تعيين حقول LDAP لحقول موظف هوريلا"
 
-#~ msgid "Horilla Employee Field"
+#~ msgid "Godzilla Employee Field"
 #~ msgstr "حقل موظف هوريلا"
 
 #~ msgid "LDAP Attribute Name"

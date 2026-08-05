@@ -65,8 +65,8 @@ msgstr "權限"
 msgid "Default Accessibility"
 msgstr "預設可訪問性"
 
-msgid "Limit default view access to horilla feature"
-msgstr "限制預設檢視存取至 Horilla 功能"
+msgid "Limit default view access to Godzilla feature"
+msgstr "限制預設檢視存取至 Godzilla 功能"
 
 msgid "Actions"
 msgstr "操作"
@@ -3292,7 +3292,7 @@ msgid "Enable this to trigger automatic check out."
 msgstr "啟用此功能以觸發自動下班打卡。"
 
 msgid ""
-"Time at which the horilla will automatically check out the employee "
+"Time at which Godzilla will automatically check out the employee "
 "attendance if they forget."
 msgstr "如果員工忘記了，將會自動檢查員工出勤的時間。"
 
@@ -5365,8 +5365,8 @@ msgstr "{} 已成功刪除。"
 msgid "{} not found."
 msgstr "{} 未找到。"
 
-msgid "Test mail from Horilla"
-msgstr "來自 Horilla 的測試郵件"
+msgid "Test mail from Godzilla"
+msgstr "來自 Godzilla 的測試郵件"
 
 msgid "Something went wrong :"
 msgstr "出了點問題："
@@ -15416,14 +15416,14 @@ msgid "Go To Home"
 msgstr "轉至首頁"
 
 msgid ""
-"Authenticate with your password to initialize the Horilla HRMS database."
-msgstr "使用您的密碼進行身份驗證以初始化 Horilla HRMS 資料庫。"
+"Authenticate with your password to initialize the Godzilla HRMS database."
+msgstr "使用您的密碼進行身份驗證以初始化 Godzilla HRMS 資料庫。"
 
 msgid "Sign Up"
 msgstr "報名"
 
-msgid "Please sign up to access the Horilla HRMS."
-msgstr "請註冊以存取 Horilla HRMS。"
+msgid "Please sign up to access the Godzilla HRMS."
+msgstr "請註冊以存取 Godzilla HRMS。"
 
 msgid "Secure Sign-up"
 msgstr "安全註冊"

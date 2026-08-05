@@ -65,8 +65,8 @@ msgstr "Permissões"
 msgid "Default Accessibility"
 msgstr "Acessibilidade Padrão"
 
-msgid "Limit default view access to horilla feature"
-msgstr "Limitar o acesso de visualização padrão ao recurso horilla"
+msgid "Limit default view access to Godzilla feature"
+msgstr "Limitar o acesso de visualização padrão ao recurso godzilla"
 
 msgid "Actions"
 msgstr "Ações."
@@ -3306,10 +3306,10 @@ msgid "Enable this to trigger automatic check out."
 msgstr "Habilite isto para acionar a verificação automática."
 
 msgid ""
-"Time at which the horilla will automatically check out the employee "
+"Time at which Godzilla will automatically check out the employee "
 "attendance if they forget."
 msgstr ""
-"Tempo em que a horilla verificará automaticamente a presença do empregado, "
+"Tempo em que a godzilla verificará automaticamente a presença do empregado, "
 "se esquecerem."
 
 msgid "Employee Shift Schedule"
@@ -5336,8 +5336,8 @@ msgstr "O {} foi excluído com sucesso."
 msgid "{} not found."
 msgstr "{} não encontrado."
 
-msgid "Test mail from Horilla"
-msgstr "Email de teste da Horilla"
+msgid "Test mail from Godzilla"
+msgstr "Email de teste da Godzilla"
 
 msgid "Something went wrong :"
 msgstr "Algo deu errado:"
@@ -15007,15 +15007,15 @@ msgid "Go To Home"
 msgstr "Ir para casa"
 
 msgid ""
-"Authenticate with your password to initialize the Horilla HRMS database."
+"Authenticate with your password to initialize the Godzilla HRMS database."
 msgstr ""
-"Autenticar com sua senha para inicializar o banco de dados do Horilla HRMS."
+"Autenticar com sua senha para inicializar o banco de dados do Godzilla HRMS."
 
 msgid "Sign Up"
 msgstr "Criar conta"
 
-msgid "Please sign up to access the Horilla HRMS."
-msgstr "Inscreva-se para acessar o Horilla HRMS."
+msgid "Please sign up to access the Godzilla HRMS."
+msgstr "Inscreva-se para acessar o Godzilla HRMS."
 
 msgid "Secure Sign-up"
 msgstr "Inscrição Segura"
@@ -15254,7 +15254,7 @@ msgstr "Número de conta"
 
 #, fuzzy
 #~| msgid "horilla-theme"
-#~ msgid "Horilla Auth"
+#~ msgid "Godzilla Auth"
 #~ msgstr "tema horilla-"
 
 #, fuzzy
@@ -15922,11 +15922,11 @@ msgstr "Número de conta"
 #~ msgid "There is no department managers at this moment."
 #~ msgstr "Não há gerentes de departamento neste momento."
 
-#~ msgid "LDAP to Horilla Employee Field Mapping"
-#~ msgstr "Mapeamento do campo LDAP para Horilla Colaborador"
+#~ msgid "LDAP to Godzilla Employee Field Mapping"
+#~ msgstr "Mapeamento do campo LDAP para Godzilla Colaborador"
 
-#~ msgid "Horilla Employee Field"
-#~ msgstr "Campo de Colaborador Horilla"
+#~ msgid "Godzilla Employee Field"
+#~ msgstr "Campo de Colaborador Godzilla"
 
 #~ msgid "LDAP Attribute Name"
 #~ msgstr "Nome do atributo LDAP"
